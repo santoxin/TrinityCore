@@ -34,7 +34,30 @@
 #include "Opcodes.h"
 #include "DisableMgr.h"
 #include "Group.h"
-
+// Prepatch by LordPsyan
+// 01
+// 02
+#include "../../scripts/Custom/npc_arena1v1.h"
+// 04
+// 05
+// 06
+// 07
+// 08
+// 09
+// 10
+// 11
+// 12
+// 13
+// 14
+// 15
+// 16
+// 17
+// 18
+// 19
+// 20
+// Visit http://www.realmsofwarcraft.com/bb for forums and information
+//
+// End of prepatch
 void WorldSession::HandleBattlemasterHelloOpcode(WorldPacket& recvData)
 {
     ObjectGuid guid;
@@ -444,6 +467,10 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
 
         if (!_player->IsInvitedForBattlegroundQueueType(bgQueueTypeId))
             return;                                 // cheating?
+
+        // 1v1 Arena. Player can't join arena when forbidden talents are used.
+        if(bgQueueTypeId == BATTLEGROUND_QUEUE_5v5 && Arena1v1CheckTalents(_player) == false)
+            return;
 
         if (!_player->InBattleground())
             _player->SetBattlegroundEntryPoint();

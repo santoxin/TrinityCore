@@ -29,6 +29,7 @@
 #include "SpellMgr.h"
 #include "SpellHistory.h"
 #include "Unit.h"
+#include "../../scripts/Custom/Transmog/Transmogrification.h"
 #include "TradeData.h"
 #include "CinematicMgr.h"
 
@@ -58,6 +59,10 @@ class UpdateMask;
 class PlayerAI;
 
 struct CharacterCustomizeInfo;
+
+// NpcBot mod
+class BotMgr;
+// end NpcBot mod
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -128,9 +133,28 @@ struct SpellModifier
     Aura* const ownerAura;
 };
 
+typedef std::unordered_map<ObjectGuid, uint32> TransmogMapType;
+
+#ifdef PRESETS
+typedef std::map<uint8, uint32> PresetslotMapType;
+struct PresetData
+{
+    std::string name;
+    PresetslotMapType slotMap; // slotMap[slotId] = entry
+};
+typedef std::map<uint8, PresetData> PresetMapType;
+#endif
+
 typedef std::unordered_map<uint32, PlayerTalent*> PlayerTalentMap;
 typedef std::unordered_map<uint32, PlayerSpell*> PlayerSpellMap;
 typedef std::list<SpellModifier*> SpellModList;
+
+struct ReforgeData
+{
+    uint32 increase, decrease;
+    int32 stat_value;
+};
+typedef std::unordered_map<uint32, ReforgeData> ReforgeMapType;
 
 typedef std::unordered_map<uint32 /*instanceId*/, time_t/*releaseTime*/> InstanceTimeMap;
 
@@ -2271,7 +2295,46 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         std::string GetMapAreaAndZoneString() const;
         std::string GetCoordsMapAreaAndZoneString() const;
-
+    // Prepatch by LordPsyan
+    // 01
+    // 02
+    // 03
+    // 04
+    // 05
+    // 06
+        TransmogMapType transmogMap; // transmogMap[iGUID] = entry
+#ifdef PRESETS
+        PresetMapType presetMap; // presetMap[presetId] = presetData
+#endif
+    // 08
+    // 09
+    // 10
+        /*********************************************************/
+        /***                     BOT SYSTEM                    ***/
+        /*********************************************************/
+        void SetBotMgr(BotMgr* mgr) { ASSERT(!_botMgr); _botMgr = mgr; }
+        BotMgr* GetBotMgr() const { return _botMgr; }
+        bool HaveBot() const;
+        uint8 GetNpcBotsCount(bool inWorldOnly = false) const;
+        uint8 GetBotFollowDist() const;
+        void SetBotFollowDist(int8 dist);
+        void SetBotsShouldUpdateStats();
+        void RemoveAllBots(uint8 removetype = 0);
+        /*********************************************************/
+        /***                 END BOT SYSTEM                    ***/
+        /*********************************************************/
+    // 12
+    // 13
+    // 14
+    // 15
+    // 16
+    // 17
+        ReforgeMapType reforgeMap; // reforgeMap[iGUID] = ReforgeData
+    // 19
+    // 20
+    // Visit http://www.realmsofwarcraft.com/bb for forums and information
+    //
+    // End of prepatch
     protected:
         // Gamemaster whisper whitelist
         GuidList WhisperList;
@@ -2524,6 +2587,14 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool m_needsZoneUpdate;
 
     private:
+        /*********************************************************/
+        /***                     BOT SYSTEM                    ***/
+        /*********************************************************/
+        BotMgr* _botMgr;
+        /*********************************************************/
+        /***                END BOT SYSTEM                     ***/
+        /*********************************************************/
+
         // internal common parts for CanStore/StoreItem functions
         InventoryResult CanStoreItem_InSpecificSlot(uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemTemplate const* pProto, uint32& count, bool swap, Item* pSrcItem) const;
         InventoryResult CanStoreItem_InBag(uint8 bag, ItemPosCountVec& dest, ItemTemplate const* pProto, uint32& count, bool merge, bool non_specialized, Item* pSrcItem, uint8 skip_bag, uint8 skip_slot) const;
@@ -2599,6 +2670,30 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint32 manaBeforeDuel;
 
         WorldLocation _corpseLocation;
+        // Prepatch by LordPsyan
+        // 21
+        // 22
+        // 23
+        // 24
+        // 25
+        // 26
+        // 27
+        // 28
+        // 29
+        // 30
+        // 31
+        // 32
+        // 33
+        // 34
+        // 35
+        // 36
+        // 37
+        // 38
+        // 39
+        // 40
+        // Visit http://www.realmsofwarcraft.com/bb for forums and information
+        //
+        // End of prepatch
 };
 
 TC_GAME_API void AddItemsSetItem(Player* player, Item* item);

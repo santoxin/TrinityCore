@@ -703,6 +703,40 @@ enum RBACPermissions
     RBAC_PERM_COMMAND_SERVER_RESTART_FORCE                   = 840,
 
     // custom permissions 1000+
+    // Prepatch by LordPsyan
+    // 01
+    // 02
+    // 03
+    // 04
+    // 05
+    // 06
+    // 07
+    // 08
+    // 09
+    RBAC_PERM_COMMAND_NPCBOT                                 = 1800,
+    RBAC_PERM_COMMAND_NPCBOT_FACTION                         = 1801,
+    RBAC_PERM_COMMAND_NPCBOT_OWNER                           = 1802,
+    RBAC_PERM_COMMAND_NPCBOT_SET                             = 1803,
+    RBAC_PERM_COMMAND_NPCBOT_ADD                             = 1804,
+    RBAC_PERM_COMMAND_NPCBOT_REMOVE                          = 1805,
+    RBAC_PERM_COMMAND_NPCBOT_SPAWN                           = 1806,
+    RBAC_PERM_COMMAND_NPCBOT_DELETE                          = 1807,
+    RBAC_PERM_COMMAND_NPCBOT_LOOKUP                          = 1808,
+    RBAC_PERM_COMMAND_NPCBOT_REVIVE                          = 1809,
+    RBAC_PERM_COMMAND_NPCBOT_CAST                            = 1810,
+    // 11
+    // 12
+    // 13
+    // 14
+    // 15
+    // 16
+    // 17
+    // 18
+    // 19
+    // 20
+    // Visit http://www.realmsofwarcraft.com/bb for forums and information
+    //
+    // End of prepatch
     RBAC_PERM_MAX
 };
 

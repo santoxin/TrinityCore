@@ -3,6 +3,28 @@
 ################################################
 [worldserver]
 
+################################################
+#         Prepatch config by LordPsyan         #
+#       http://www.realmsofwarcraft.com/       #
+################################################
+
+###################################################################################################
+#
+# Prepatch Configuration
+#
+#
+# If you add GuildLevelSystem or Individual XP Rate patches, you must
+# set this to 1.
+#
+# PrepatchGI Added
+#         default = 0 (GuildLevelSystem and Individual XP Rate not added)
+#                 = 1 (GuildLevelSystem and/or Individual XP Rate added)
+
+PrepatchGI.Added = 0
+
+#
+###################################################################################################
+
 ###################################################################################################
 # SECTION INDEX
 #
@@ -2632,6 +2654,71 @@ ArenaLog.ExtendedInfo = 0
 
 #
 ###################################################################################################
+# 1V1 ARENA CONFIG
+#
+#     Arena.1v1.Enable
+#         Description: Enable the 1v1 arena.
+#         Default:     0 - (Disabled)
+#                      1 - (Enabled)
+
+Arena.1v1.Enable = 1
+
+#
+#    Arena.1v1.Announcer
+#        Description: Announce 1v1 arena queue status to chat.
+#                      Arena.QueueAnnouncer.Enable must be enabled.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+Arena.1v1.Announcer = 0
+
+#
+#    Arena.1v1.MinLevel
+#        Description: Min level to create an arena team
+#        Default:     80
+
+Arena.1v1.MinLevel = 80
+
+#
+#    Arena.1v1.Costs
+#        Description: Costs for create an arena team
+#        Default:     400000 - (40 gold)
+
+Arena.1v1.Costs = 400000
+
+#
+#    Arena.1v1.VendorRating
+#        Description: If true, 1v1 rating will use to calculate highest personal-rating (extended costs).
+#                      Note: The vendor-item will show as not buyable (red), but players can buy it, if enabled and rating is high enough.
+#        Default:     0 - (false)
+#                      1 - (true)
+
+Arena.1v1.VendorRating = 0
+
+#
+#    Arena.1v1.ArenaPointsMulti
+#        Description: An 5v5 arena team with 1500 rating will gain 344 points per week (blizzlike).
+#                      3v3 with same rating will gain 302 points (5v5points * 0.88)
+#                      2v2 will gain 261 points (5v5points * 0.76)
+#                      and 1v1 will gain 167 points (5v5points * 0.64)
+#                      With this multiplier you can modify the arenapoints for 1v1.
+#        Default:     0.64
+
+Arena.1v1.ArenaPointsMulti = 0.64
+
+#
+#    Arena.1v1.BlockForbiddenTalents
+#        Description: If true, healers can't join 1v1 arena, if they invested more than 35 talentpoints in a healing-talenttree.
+#                      You can also block tanks and other talents, if you modify FORBIDDEN_TALENTS_IN_1V1_ARENA in the npc_arena1v1.h file (hardcoding). See TalentTab.dbc for available talents (you will need an DBC-Editor).
+#        Default:     1 - (true)
+#                      0 - (false)
+
+Arena.1v1.BlockForbiddenTalents = 1
+
+#
+###################################################################################################
+
+###################################################################################################
 
 ###################################################################################################
 # NETWORK CONFIG
@@ -3700,3 +3787,401 @@ PacketSpoof.BanDuration = 86400
 
 #
 ###################################################################################################
+
+###################################################################################################
+# NPCBOT CONFIGURATION
+#
+#    NpcBot.Enable
+#        Description: Enable NpcBot system
+#        Default:   1 - enable
+#                   0 - disable
+
+NpcBot.Enable = 1
+
+#
+#    NpcBot.AllowGM
+#        Description: Allow GM's to have NpcBots
+#        Default:   1 - Allow
+#                   0 - disable
+
+NpcBot.AllowGM = 1
+
+#    NpcBot.MaxBots
+#        Description: Maximum number of bots allowed for players.
+#        Default:   1
+#        Recommend: 1-2
+#        Max:       4
+
+NpcBot.MaxBots = 1
+
+#    NpcBot.MaxBotsPerClass
+#        Description: Maximum bots of each class allowed for players.
+#        Default:   1
+#                   0 - no limit
+
+NpcBot.MaxBotsPerClass = 1
+
+#    NpcBot.BaseFollowDistance
+#        Description: Default bot follow distance.
+#        Note: This parameter determines bots' formation size, distance at which bots will chase and attack enemies.
+#        Note2: This parameter is set for each player at login.
+#        Default:   30
+
+NpcBot.BaseFollowDistance = 20
+
+#    NpcBot.XpReduction
+#        Description: XP percent penalty for each bot used starting with second.
+#        Example: 3 bots, xp reduction is 20: ((3-1)*20) = 40%, 60% exp gained only.
+#        Note: Maximum overall xp reduction is 90%.
+#        Default:   0
+
+NpcBot.XpReduction = 0
+
+#    NpcBot.HealTargetIconsMask
+#        Description: Icon number bitmask which bots use to search for additional targets to heal (out of party).
+#        Note: Many creatures cannot accept heal.
+#        Example: to check Star, Triangle and Square we need 1 + 8 + 32 = 41.
+#        Default:   0 (Disable)
+#                   1 - Star
+#                   2 - Circle
+#                   4 - Diamond
+#                   8 - Triangle
+#                   16 - Moon
+#                   32 - Square
+#                   64 - Cross
+#                   128 - Skull
+
+NpcBot.HealTargetIconsMask = 0
+
+#    NpcBot.Mult.Damage.Melee
+#    NpcBot.Mult.Damage.Spell
+#    NpcBot.Mult.Healing
+#        Description: Multipliers for bots' damage and healing. Allows to balance bots vs players.
+#        Minimum:   0.1
+#        Maximum:  10.0
+#        Default:   1.0
+
+NpcBot.Mult.Damage.Melee = 1.0
+NpcBot.Mult.Damage.Spell = 1.0
+NpcBot.Mult.Healing      = 1.0
+
+#    NpcBot.Enable.Dungeon
+#    NpcBot.Enable.Raid
+#    NpcBot.Enable.BG
+#    NpcBot.Enable.Arena
+#    NpcBot.Enable.DungeonFinder
+#        Description: Allow bots to enter PvE/PvP areas and Dungeon Finder query
+#        Default:   1 - (NpcBot.Enable.Dungeon)
+#                   0 - (NpcBot.Enable.Raid)
+#                   0 - (NpcBot.Enable.BG)
+#                   0 - (NpcBot.Enable.Arena)
+#                   1 - (NpcBot.Enable.DungeonFinder)
+
+NpcBot.Enable.Dungeon       = 1
+NpcBot.Enable.Raid          = 0
+NpcBot.Enable.BG            = 0
+NpcBot.Enable.Arena         = 0
+NpcBot.Enable.DungeonFinder = 1
+
+#    NpcBot.Limit.Dungeon
+#    NpcBot.Limit.Raid
+#        Description: Enable/Disable instance players limitation rules for bots.
+#        Default:   1 - (NpcBot.Limit.Dungeon)
+#                   1 - (NpcBot.Limit.Raid)
+
+NpcBot.Limit.Dungeon = 1
+NpcBot.Limit.Raid    = 1
+
+#    NpcBot.Cost
+#        Description: Bot recruitment cost (in copper).
+#        Note: This value is for level 80 characters.
+#              Cost is reduced for lower levels by simple formula: (cost * level / 80).
+#        Default:   1000000 (100 gold, 1g25s at level 1)
+
+NpcBot.Cost = 1000000
+
+#    NpcBot.PvP
+#        Description: Allow bots to attack player-controlled units (players, pets, bots, etc.)
+#        Note: This rule only applies to player-controlled bots
+#        Default:   1
+
+NpcBot.PvP = 1
+
+#
+###################################################################################################
+
+###################################################################################################
+#    Transmogrification config
+###################################################################################################
+#
+#    SETTINGS
+#
+#    Logger.custom.transmog
+#        Description: Transmogrification logging setting, see logger settings
+#        Default:    3, Console Server
+#
+#    Transmogrification.EnableTransmogInfo
+#        Description: Enables / Disables the info button for transmogrification
+#        Default:    1
+#
+#    Transmogrification.TransmogNpcText
+#        Description: The npc_text entry of the info menu for transmogrification
+#        Default:    50000
+#
+#    Transmogrification.Allowed
+#        Description: A list of item entries that are allowed for transmogrification (skips quality and CanUseItem check)
+#                     Example: "25 35674 5623"
+#        Default:    ""
+#
+#    Transmogrification.NotAllowed
+#        Description: A list of item entries that are NOT allowed for transmogrification
+#                     Example: "25 35674 5623"
+#        Default:    ""
+
+Logger.custom.transmog = 3, Console Server
+
+Transmogrification.EnableTransmogInfo = 1
+Transmogrification.TransmogNpcText = 50000
+
+Transmogrification.Allowed = ""
+Transmogrification.NotAllowed = ""
+
+#
+#    COPPER COST
+#
+#    Transmogrification.ScaledCostModifier
+#        Description: A multiplier for the default gold cost (change to 0 for no default cost)
+#        Default:    1.0
+#
+#    Transmogrification.CopperCost
+#        Description: Cost added on top of other costs (can be negative)
+#        Default:    0
+#
+#    For custom gold cost set ScaledCostModifier to 0.0 and CopperCost to what ever cost you want
+
+Transmogrification.ScaledCostModifier = 1.0
+Transmogrification.CopperCost = 0
+
+#
+#    TOKEN COST
+#
+#    Transmogrification.RequireToken
+#        Description: Adds/disables token cost
+#        Default:    0
+#
+#    Transmogrification.TokenEntry
+#        Description: Entry of the token item
+#        Default:    49426
+#
+#    Transmogrification.TokenAmount
+#        Description: Amount of tokens required
+#        Default:    1
+
+Transmogrification.RequireToken = 0
+Transmogrification.TokenEntry = 49426
+Transmogrification.TokenAmount = 1
+
+#
+#    REQUIREMENTS
+#
+#    Transmogrification.AllowPoor
+#        Description: Allow poor quality items to be used as source and target items
+#        Default:    0
+#
+#    Transmogrification.AllowCommon
+#        Description: Allow common quality items to be used as source and target items
+#        Default:    0
+#
+#    Transmogrification.AllowUncommon
+#        Description: Allow uncommon quality items to be used as source and target items
+#        Default:    1
+#
+#    Transmogrification.AllowRare
+#        Description: Allow rare quality items to be used as source and target items
+#        Default:    1
+#
+#    Transmogrification.AllowEpic
+#        Description: Allow epic quality items to be used as source and target items
+#        Default:    1
+#
+#    Transmogrification.AllowLegendary
+#        Description: Allow legendary quality items to be used as source and target items
+#        Default:    0
+#
+#    Transmogrification.AllowArtifact
+#        Description: Allow artifact quality items to be used as source and target items
+#        Default:    0
+#
+#    Transmogrification.AllowHeirloom
+#        Description: Allow heirloom quality items to be used as source and target items
+#        Default:    1
+#
+#    Transmogrification.AllowMixedArmorTypes
+#        Description: Allow cloth items to be transmogrified with plate for example
+#        Default:    0
+#
+#    Transmogrification.AllowMixedWeaponTypes
+#        Description: Allow axe to be transmogrified with dagger for example
+#        Default:    0
+#
+#    Transmogrification.AllowFishingPoles
+#        Description: Allow fishing poles to be transmogrified
+#        Default:    0
+#
+#    Transmogrification.IgnoreReqRace
+#        Description: Ignore required race for source items
+#        Default:    0
+#
+#    Transmogrification.IgnoreReqClass
+#        Description: Ignore required class for source items
+#        Default:    0
+#
+#    Transmogrification.IgnoreReqSkill
+#        Description: Ignore required skill for source items
+#        Default:    0
+#
+#    Transmogrification.IgnoreReqSpell
+#        Description: Ignore required spell for source items
+#        Default:    0
+#
+#    Transmogrification.IgnoreReqLevel
+#        Description: Ignore required level for source items
+#        Default:    0
+#
+#    Transmogrification.IgnoreReqEvent
+#        Description: Ignore required event for source items
+#        Default:    0
+#
+#    Transmogrification.IgnoreReqStats
+#        Description: Ignore stat count > 0 requirement for source items
+#        Default:    0
+
+Transmogrification.AllowPoor = 0
+Transmogrification.AllowCommon = 0
+Transmogrification.AllowUncommon = 1
+Transmogrification.AllowRare = 1
+Transmogrification.AllowEpic = 1
+Transmogrification.AllowLegendary = 0
+Transmogrification.AllowArtifact = 0
+Transmogrification.AllowHeirloom = 1
+
+Transmogrification.AllowMixedArmorTypes = 0
+Transmogrification.AllowMixedWeaponTypes = 0
+Transmogrification.AllowFishingPoles = 0
+
+Transmogrification.IgnoreReqRace = 0
+Transmogrification.IgnoreReqClass = 0
+Transmogrification.IgnoreReqSkill = 0
+Transmogrification.IgnoreReqSpell = 0
+Transmogrification.IgnoreReqLevel = 0
+Transmogrification.IgnoreReqEvent = 0
+Transmogrification.IgnoreReqStats = 0
+
+#
+#    SET FEATURE
+#
+#    Transmogrification.EnableSets
+#        Description: Enables / Disables the set feature. If you want permanent disable, check Transmogrification.h
+#        Default:    1
+#
+#    Transmogrification.MaxSets
+#        Description: Maximum amount of sets a player can save (hardcap at 25)
+#        Default:    10
+#
+#    Transmogrification.EnableSetInfo
+#        Description: Enables / Disables the info button for set fature
+#        Default:    1
+#
+#    Transmogrification.SetNpcText
+#        Description: The npc_text entry of the info menu for the set feature
+#        Default:    50001
+#
+#    Transmogrification.SetCostModifier
+#        Description: A multiplier for the default gold cost (all costs summed together) (change to 0 for no default cost)
+#        Default:    3.0
+#
+#    Transmogrification.SetCopperCost
+#        Description: Cost added on top of other costs (can be negative)
+#        Default:    0
+
+Transmogrification.EnableSets = 1
+Transmogrification.MaxSets = 10
+
+Transmogrification.EnableSetInfo = 1
+Transmogrification.SetNpcText = 50001
+
+Transmogrification.SetCostModifier = 3.0
+Transmogrification.SetCopperCost = 0
+
+#
+###################################################################################################
+
+###################################################################################################
+# GuildHouse
+#
+# Settings for the GuildHouse Keeper.
+#
+#    Guildhouse.TokenOrGold
+#        Description: Use tokens or money to buy guild houses.
+#        Default:     0 - Use Money
+#                     1 - Use Token
+#
+
+Guildhouse.TokenOrGold = 0
+
+#    GuildHouse.BuyCost
+#        Description: Amount of gold or quantity of tokens to buy guildhouse.
+#        Default:     1000 - 1000 gold
+#
+
+Guildhouse.BuyCost = 1000
+
+#    GuildHouse.BuyCost
+#        Description: Amount of gold or quantity of tokens gained when selling guildhouse.
+#        Default:     5000000 - 500 gold
+#
+
+Guildhouse.SellCost = 500
+
+#
+###################################################################################################
+
+#
+# Prepatch by LordPsyan.
+# See http://www.realmsofwarcraft.com/bb for forums and information.
+#
+
+###################################################################################################
+# Dedicated World Chat Channel
+# By slp13at420 of EmuDevs.com
+#
+#
+# This setting allows you to select what channel to dedicate for World Chat. 
+# 
+# 	WORLDCHANNELCHAT.CHANNEL
+#		Description: channel id.
+#		Default: 1
+
+WORLDCHANNELCHAT.CHANNEL = 3
+
+#
+# This setting will adjust the spam check duration between a players messages. 
+# 
+# 	WORLDCHANNELCHAT.DELAY
+#		Description: forces players to wait x seconds between each message they send.
+#		             1 = 1 second.
+#		Default: 5 // 5 second wait.
+
+WORLDCHANNELCHAT.DELAY = 0
+
+#
+# This setting will set if wether a players message is seen by only there team or world. 
+# 
+# 	WORLDCHANNELCHAT.TEAM
+#		Description: 0 = world // 1 = team only.
+#		Default: 1 // 1 team only.
+
+WORLDCHANNELCHAT.TYPE = 0
+
+#
+#####################################################################################################################
