@@ -237,8 +237,8 @@ void AddSC_script_bot_commands();
 //advanced
 //void AddSC_BotQuests_chapter1();
 //end Bots
-    // World Channel Chat
-    void AddSC_WorldChannelChat();
+// World Channel Chat
+void AddSC_WorldChannelChat();
     
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
