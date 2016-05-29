@@ -1899,13 +1899,16 @@ void bot_ai::ReceiveEmote(Player* player, uint32 emote)
 {
     switch (emote)
     {
+        // thesawolf - lets make the AI more personable
         case TEXT_EMOTE_BONK:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_CRY);
             _listAuras(player, me);
             break;
         case TEXT_EMOTE_SALUTE:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
             _listAuras(player, player);
             break;
-        case TEXT_EMOTE_STAND:
+        case TEXT_EMOTE_WAIT:
             if (!IsMinionAI())
                 return;
             if (master != player)
@@ -1914,9 +1917,10 @@ void bot_ai::ReceiveEmote(Player* player, uint32 emote)
                 return;
             }
             SetBotCommandState(COMMAND_STAY);
-            BotWhisper("Standing Still.", player);
+            BotWhisper("Fine.. I'll stay right here..", player);
             break;
-        case TEXT_EMOTE_WAVE:
+        case TEXT_EMOTE_BECKON:
+        case TEXT_EMOTE_FOLLOW:
             if (!IsMinionAI())
                 return;
             if (master != player)
@@ -1925,9 +1929,391 @@ void bot_ai::ReceiveEmote(Player* player, uint32 emote)
                 return;
             }
             SetBotCommandState(COMMAND_FOLLOW, true);
-            BotWhisper("Following!", player);
+            BotWhisper("Wherever you go, I'll follow..", player);
+            break;
+        case TEXT_EMOTE_WAVE:
+        case TEXT_EMOTE_GREET:
+        case TEXT_EMOTE_HAIL:
+        case TEXT_EMOTE_HELLO:
+        case TEXT_EMOTE_WELCOME:
+        case TEXT_EMOTE_INTRODUCE:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_WAVE);
+            BotSay("Hey there!", player);
+            break;
+        case TEXT_EMOTE_DANCE:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_DANCE);
+            BotSay("Shake what your mama gave you!", player);
+            break;
+        case TEXT_EMOTE_FLIRT:
+        case TEXT_EMOTE_KISS:
+        case TEXT_EMOTE_HUG:
+        case TEXT_EMOTE_BLUSH:
+        case TEXT_EMOTE_SMILE:
+        case TEXT_EMOTE_LOVE:
+        case TEXT_EMOTE_HOLDHAND:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_SHY);
+            BotSay("Awwwww...", player);
+            break;
+        case TEXT_EMOTE_FLEX:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_APPLAUD);
+            BotSay("Hercules! Hercules!", player);
+            break;
+        case TEXT_EMOTE_ANGRY:
+        case TEXT_EMOTE_FACEPALM:
+        case TEXT_EMOTE_GLARE:
+        case TEXT_EMOTE_BLAME:
+        case TEXT_EMOTE_FAIL:
+        case TEXT_EMOTE_REGRET:
+        case TEXT_EMOTE_SCOLD:
+        case TEXT_EMOTE_CROSSARMS:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_QUESTION);
+            BotSay("Did I do thaaaaat?", player);
+            break;
+        case TEXT_EMOTE_FART:
+        case TEXT_EMOTE_BURP:
+        case TEXT_EMOTE_GASP:
+        case TEXT_EMOTE_NOSEPICK:
+        case TEXT_EMOTE_SNIFF:
+        case TEXT_EMOTE_STINK:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
+            BotSay("Wasn't me! Just sayin'..", player);
+            break;
+        case TEXT_EMOTE_JOKE:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_LAUGH);
+            BotSay("Oh.. was I not supposed to laugh so soon?", player);
+            break;
+        case TEXT_EMOTE_CHICKEN:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_RUDE);
+            BotSay("We'll see who's chicken soon enough!", player);
+            break;
+        case TEXT_EMOTE_APOLOGIZE:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_POINT); 
+            BotSay("You damn right you're sorry!", player);
+            break;
+        case TEXT_EMOTE_APPLAUD:
+        case TEXT_EMOTE_CLAP:
+        case TEXT_EMOTE_CONGRATULATE:
+        case TEXT_EMOTE_HAPPY:
+        case TEXT_EMOTE_GOLFCLAP:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_BOW);
+            BotSay("Thank you.. Thank you.. I'm here all week.", player);
+            break;
+        case TEXT_EMOTE_BEG:
+        case TEXT_EMOTE_GROVEL:
+        case TEXT_EMOTE_PLEAD:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_NO);
+            BotSay("Beg all you want.. I have nothing for you.", player);
+            break;
+        case TEXT_EMOTE_BITE:
+        case TEXT_EMOTE_POKE:
+        case TEXT_EMOTE_SCRATCH:
+        case TEXT_EMOTE_PINCH:
+        case TEXT_EMOTE_PUNCH:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
+            BotYell("OUCH! Dammit, that hurt!", player);
+            break;
+        case TEXT_EMOTE_BORED:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_NO); 
+            BotSay("My job description doesn't include entertaining you..", player);
+            break;
+        case TEXT_EMOTE_BOW:
+        case TEXT_EMOTE_CURTSEY:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_BOW);
+            break;
+        case TEXT_EMOTE_BRB:
+        case TEXT_EMOTE_SIT:
+            me->HandleEmoteCommand(EMOTE_STATE_SIT); // replace if state doesn't break
+            BotSay("Looks like time for an AFK break..", player);
+            me->HandleEmoteCommand(EMOTE_ONESHOT_EAT);
+            break;
+        case TEXT_EMOTE_AGREE:
+        case TEXT_EMOTE_NOD:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
+            BotSay("At least SOMEONE agrees with me!", player);
+            break;
+        case TEXT_EMOTE_AMAZE:
+        case TEXT_EMOTE_COWER:
+        case TEXT_EMOTE_CRINGE:
+        case TEXT_EMOTE_EYE:
+        case TEXT_EMOTE_KNEEL:
+        case TEXT_EMOTE_PEER:
+        case TEXT_EMOTE_SURRENDER:
+        case TEXT_EMOTE_PRAISE:
+        case TEXT_EMOTE_SCARED:
+        case TEXT_EMOTE_COMMEND:
+        case TEXT_EMOTE_AWE:
+        case TEXT_EMOTE_JEALOUS:
+        case TEXT_EMOTE_PROUD:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_FLEX);
+            BotSay("Yes, Yes. I know I'm amazing..", player);
+            break;
+        case TEXT_EMOTE_BLEED:
+        case TEXT_EMOTE_MOURN:
+        case TEXT_EMOTE_FLOP:
+        case TEXT_EMOTE_FAINT:
+        case TEXT_EMOTE_PULSE:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_KNEEL);
+            BotYell("MEDIC! Stat!", player);
+            break;
+        case TEXT_EMOTE_BLINK:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_KICK);
+            BotSay("What? You got something in your eye?", player);
+            break;
+        case TEXT_EMOTE_BOUNCE:
+        case TEXT_EMOTE_BARK:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
+            BotSay("Who's a good doggy? You're a good doggy!", player);
+            break;
+        case TEXT_EMOTE_BYE:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_WAVE);
+            BotSay("Umm.... wait! Where are you going?!", player);
+            break;
+        case TEXT_EMOTE_CACKLE:
+        case TEXT_EMOTE_LAUGH:
+        case TEXT_EMOTE_CHUCKLE:
+        case TEXT_EMOTE_GIGGLE:
+        case TEXT_EMOTE_GUFFAW:
+        case TEXT_EMOTE_ROFL:
+        case TEXT_EMOTE_SNICKER:
+        case TEXT_EMOTE_SNORT:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_LAUGH);
+            BotSay("Wait... what are we laughing at again?", player);
+            break;
+        case TEXT_EMOTE_CONFUSED:
+        case TEXT_EMOTE_CURIOUS:
+        case TEXT_EMOTE_FIDGET:
+        case TEXT_EMOTE_FROWN:
+        case TEXT_EMOTE_SHRUG:
+        case TEXT_EMOTE_SIGH:
+        case TEXT_EMOTE_STARE:
+        case TEXT_EMOTE_TAP:
+        case TEXT_EMOTE_SURPRISED:
+        case TEXT_EMOTE_WHINE:
+        case TEXT_EMOTE_BOGGLE:
+        case TEXT_EMOTE_LOST:
+        case TEXT_EMOTE_PONDER:
+        case TEXT_EMOTE_SNUB:
+        case TEXT_EMOTE_SERIOUS:
+        case TEXT_EMOTE_EYEBROW:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_QUESTION);
+            BotSay("Don't look at  me.. I just work here", player);
+            break;
+        case TEXT_EMOTE_COUGH:
+        case TEXT_EMOTE_DROOL:
+        case TEXT_EMOTE_SPIT:
+        case TEXT_EMOTE_LICK:
+        case TEXT_EMOTE_BREATH:
+        case TEXT_EMOTE_SNEEZE:
+        case TEXT_EMOTE_SWEAT:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
+            BotSay("Ewww! Keep your nasty germs over there!", player);
+            break;
+        case TEXT_EMOTE_CRY:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_CRY);
+            BotSay("Don't you start crying or it'll make me start crying!", player);
+            break;
+        case TEXT_EMOTE_CRACK:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
+            BotSay("It's clobbering time!", player);
+            break;
+        case TEXT_EMOTE_EAT:
+        case TEXT_EMOTE_DRINK:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_EAT);
+            BotSay("I hope you brought enough for the whole class...", player);
+            break;
+        case TEXT_EMOTE_GLOAT:
+        case TEXT_EMOTE_MOCK:
+        case TEXT_EMOTE_TEASE:
+        case TEXT_EMOTE_EMBARRASS:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_CRY);
+            BotSay("Doesn't mean you need to be an ass about it..", player);
+            break;
+        case TEXT_EMOTE_HUNGRY:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_EAT);
+            BotSay("What? You want some of this?", player);
+            break;
+        case TEXT_EMOTE_LAYDOWN:
+        case TEXT_EMOTE_TIRED:
+        case TEXT_EMOTE_YAWN:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_KNEEL);
+            BotSay("Is it break time already?", player);
+            break;
+        case TEXT_EMOTE_MOAN:
+        case TEXT_EMOTE_MOON:
+        case TEXT_EMOTE_SEXY:
+        case TEXT_EMOTE_SHAKE:
+        case TEXT_EMOTE_WHISTLE:
+        case TEXT_EMOTE_CUDDLE:
+        case TEXT_EMOTE_PURR:
+        case TEXT_EMOTE_SHIMMY:
+        case TEXT_EMOTE_SMIRK:
+        case TEXT_EMOTE_WINK:
+        case TEXT_EMOTE_CHARM:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_NO);
+            BotSay("Keep it in your pants, boss..", player);
+            break;
+        case TEXT_EMOTE_NO:
+        case TEXT_EMOTE_VETO:
+        case TEXT_EMOTE_DISAGREE:
+        case TEXT_EMOTE_DOUBT:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_QUESTION);
+            BotSay("Aww.... why not?!", player);
+            break;
+        case TEXT_EMOTE_PANIC:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
+            BotSay("Now is NOT the time to panic!", player);
+            break;
+        case TEXT_EMOTE_POINT:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
+            BotSay("What?! I can do that TOO!", player);
+            break;
+        case TEXT_EMOTE_RUDE:
+        case TEXT_EMOTE_RASP:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_RUDE);
+            BotSay("Right back at you, bub!", player);
+            break;
+        case TEXT_EMOTE_ROAR:
+        case TEXT_EMOTE_THREATEN:
+        case TEXT_EMOTE_CALM:
+        case TEXT_EMOTE_DUCK:
+        case TEXT_EMOTE_TAUNT:
+        case TEXT_EMOTE_PITY:
+        case TEXT_EMOTE_GROWL:
+        case TEXT_EMOTE_TRAIN:
+        case TEXT_EMOTE_INCOMING:
+        case TEXT_EMOTE_CHARGE:
+        case TEXT_EMOTE_FLEE:
+        case TEXT_EMOTE_ATTACKMYTARGET:
+        case TEXT_EMOTE_OPENFIRE:
+        case TEXT_EMOTE_ENCOURAGE:
+        case TEXT_EMOTE_ENEMY:
+        case TEXT_EMOTE_CHALLENGE:
+        case TEXT_EMOTE_REVENGE:
+        case TEXT_EMOTE_SHAKEFIST:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
+            BotYell("RAWR!", player);
+            break;
+        case TEXT_EMOTE_TALK:
+        case TEXT_EMOTE_TALKEX:
+        case TEXT_EMOTE_TALKQ:
+        case TEXT_EMOTE_LISTEN:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
+            BotSay("Blah Blah Blah Yakety Smackety..", player);
+            break;
+        case TEXT_EMOTE_THANK:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_BOW);
+            BotSay("You are quite welcome!", player);
+            break;
+        case TEXT_EMOTE_VICTORY:
+        case TEXT_EMOTE_CHEER:
+        case TEXT_EMOTE_TOAST:
+        case TEXT_EMOTE_HIGHFIVE:
+        case TEXT_EMOTE_DING:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_CHEER);
+            BotSay("Yay!", player);
+            break;
+        case TEXT_EMOTE_COLD:
+        case TEXT_EMOTE_SHIVER:
+        case TEXT_EMOTE_THIRSTY:
+        case TEXT_EMOTE_OOM:
+        case TEXT_EMOTE_HEALME:
+        case TEXT_EMOTE_POUT:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_QUESTION);
+            BotSay("And what exactly am I supposed to do about that?", player);
+            break;
+        case TEXT_EMOTE_COMFORT:
+        case TEXT_EMOTE_SOOTHE:
+        case TEXT_EMOTE_PAT:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_CRY);
+            BotSay("Thanks...", player);
+            break;
+        case TEXT_EMOTE_INSULT:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_CRY);
+            BotSay("You hurt my feelings..", player);
+            break;
+        case TEXT_EMOTE_JK:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
+            BotSay("You.....", player);
+            break;
+        case TEXT_EMOTE_RAISE:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
+            BotSay("Yes.. you.. at the back of the class..", player);
+            break;
+        case TEXT_EMOTE_READY:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
+            BotSay("Ready here, too!", player);
+            break;
+        case TEXT_EMOTE_SHOO:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_KICK);
+            BotSay("Shoo yourself!", player);
+            break;
+        case TEXT_EMOTE_SLAP:
+        case TEXT_EMOTE_SMACK:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_CRY);
+            BotSay("What did I do to deserve that?", player);
+            break;
+        case TEXT_EMOTE_STAND:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
+            BotSay("What? Break time's over? Fine..", player);
+            break;
+        case TEXT_EMOTE_TICKLE:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_LAUGH);
+            BotSay("Hey! Stop that!", player);
+            break;
+        case TEXT_EMOTE_VIOLIN:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
+            BotSay("Har Har.. very funny..", player);
+            break;
+        case TEXT_EMOTE_HELPME:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
+            BotYell("Quick! Someone HELP!", player);
+            break;
+        case TEXT_EMOTE_GOODLUCK:
+        case TEXT_EMOTE_LUCK:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
+            BotSay("Thanks... I'll need it..", player);
+            break;
+        case TEXT_EMOTE_BRANDISH:
+        case TEXT_EMOTE_MERCY:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_BEG);
+            BotSay("Please don't kill me!", player);
+            break;
+        case TEXT_EMOTE_BADFEELING:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_QUESTION);
+            BotSay("I'm just waiting for the ominous music now...", player);
+            break;
+        case TEXT_EMOTE_MAP:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_NO);
+            BotSay("Noooooooo.. you just couldn't ask for direction, huh?", player);
+            break;
+        case TEXT_EMOTE_IDEA:
+        case TEXT_EMOTE_THINK:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_NO);
+            BotSay("Oh boy.. another genius idea...", player);
+            break;
+        case TEXT_EMOTE_OFFER:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_NO);
+            BotSay("No thanks.. I had some back at the last village", player);
+            break;
+        case TEXT_EMOTE_PET:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
+            BotSay("Do I look like a dog to you?!", player);
+            break;
+        case TEXT_EMOTE_ROLLEYES:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
+            BotSay("Keep doing that and I'll roll those eyes right out of your head..", player);
+            break;
+        case TEXT_EMOTE_SING:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_APPLAUD);
+            BotSay("Lovely... just lovely..", player);
+            break;
+        case TEXT_EMOTE_COVEREARS:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
+            BotYell("You think that's going to help you?!", player);
             break;
         default:
+            me->HandleEmoteCommand(EMOTE_ONESHOT_QUESTION);
+            BotSay("Mmmmmkaaaaaay...", player);
             break;
     }
 }

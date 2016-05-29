@@ -1,0 +1,46 @@
+
+*** These modified files were found in JOE when it aborted on Sat May 28 20:29:19 2016
+*** JOE was aborted because the terminal closed
+
+*** File '(Unnamed)'
+Warrior Minion
+Warrior Minion
+Rogue Minion
+Priest Minion
+Hunter Minion
+Warlock Minion
+Druid Minion
+Shaman Minion
+Paladin Minion
+Death Knight Minion
+
+*** File '(Unnamed)'
+Faction
+set faction
+set faction
+faction
+player
+player->
+thesawolf
+Player
+thesawolf
+spawn
+
+*** File '(Unnamed)'
+mysqld.cnf
+mysqld.cnf
+mysqld.cnf
+mysqld.cnf
+mysqld.cnf
+mysqld.cnf
+mysqld.cnf
+mysqld.cnf
+/root/LegacyCore/.git/MERGE_MSG
+CharacterDatabase.cpp
+Implementation/CharacterDatabase.cpp
+
+*** File '* Startup Log *'
+Processing '/etc/joe/joerc'...
+Processing '/etc/joe/ftyperc'...
+Finished processing /etc/joe/ftyperc
+Finished processing /etc/joe/joerc
