@@ -2022,9 +2022,9 @@ void bot_ai::ReceiveEmote(Player* player, uint32 emote)
             break;
         case TEXT_EMOTE_BRB:
         case TEXT_EMOTE_SIT:
-            me->HandleEmoteCommand(EMOTE_STATE_SIT); // replace if state doesn't break
-            BotSay("Looks like time for an AFK break..", player);
+            //me->HandleEmoteCommand(EMOTE_STATE_SIT); // replace if state doesn't break
             me->HandleEmoteCommand(EMOTE_ONESHOT_EAT);
+            BotSay("Looks like time for an AFK break..", player);
             break;
         case TEXT_EMOTE_AGREE:
         case TEXT_EMOTE_NOD:
