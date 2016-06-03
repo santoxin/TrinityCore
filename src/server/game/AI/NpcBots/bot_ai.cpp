@@ -1313,6 +1313,10 @@ void bot_minion_ai::SetStats(bool force, bool shapeshift)
     if (me->getLevel() != mylevel)
     {
         me->SetLevel(mylevel);
+        //thesawolf - lets add a ding here
+        Player* player;
+        me->HandleEmoteCommand(EMOTE_ONESHOT_CHEER);
+        BotYell("DING!", player);        
         force = true; //reinit spells/passives/other
     }
     if (force)
@@ -1710,6 +1714,10 @@ void bot_pet_ai::SetStats(bool force, bool /*unk*/)
     if (me->getLevel() != mylevel)
     {
         me->SetLevel(mylevel);
+        //thesawolf - lets add a ding here
+        Player* player;
+        me->HandleEmoteCommand(EMOTE_ONESHOT_CHEER);
+        BotYell("DING!", player);        
         force = true; //restore powers on lvl update
     }
     if (force)
@@ -4370,10 +4378,15 @@ bool bot_minion_ai::OnGossipHello(Player* player, Creature* creature, uint32 /*o
                     GOSSIP_SENDER_HIRE, GOSSIP_ACTION_INFO_DEF + 0, message.str().c_str(), cost, false);
             }
             else
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Will you follow me?", GOSSIP_SENDER_HIRE, GOSSIP_ACTION_INFO_DEF + reason);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Will you follow me?", GOSSIP_SENDER_HIRE, GOSSIP_ACTION_INFO_DEF + reason);
 
             if (creature->GetBotClass() >= BOT_CLASS_EX_START)
                 player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "<Take a better look on this one>", GOSSIP_SENDER_SCAN, GOSSIP_ACTION_INFO_DEF + 1);
+            
+            //thesawolf - add set faction option to gossip
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Pick a side!", GOSSIP_SENDER_FACTION, GOSSIP_ACTION_INFO_DEF + 1);
+            //thesawolf - a delete for good measure
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "You can go now...", GOSSIP_SENDER_EARLYDISMISS, GOSSIP_ACTION_INFO_DEF + 1);            
 
             menus = true;
         }
@@ -4418,7 +4431,7 @@ bool bot_minion_ai::OnGossipHello(Player* player, Creature* creature, uint32 /*o
         if (player == creature->GetBotOwner())
         {
             std::ostringstream astr;
-            astr << "Are you going to abandon " << creature->GetName() << "? You may regret it...";
+            astr << "Are you going to send " << creature->GetName() << " away?";
             player->PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, GOSSIP_ICON_TAXI, "You are dismissed",
                 GOSSIP_SENDER_DISMISS, GOSSIP_ACTION_INFO_DEF + 1, astr.str().c_str(), 0, false);
 
@@ -4457,12 +4470,107 @@ bool bot_minion_ai::OnGossipSelect(Player* player, Creature* creature/* == me*/,
     {
         case 0: //any kind of fail
         {
-            BotSay("...", player);
+            me->HandleEmoteCommand(EMOTE_ONESHOT_NO);
+            BotSay("You may want to try that again.. or try something different..", player);
             break;
         }
         case 1: //return to main menu
         {
             return bot_minion_ai::OnGossipHello(player, creature, 0);
+        }
+        case GOSSIP_SENDER_EARLYDISMISS:
+        {
+            //thesawolf - early dismissal/delete
+            me->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
+            me->HandleEmoteCommand(EMOTE_ONESHOT_FLEX);
+            BotSay("We would've been good together...", player);
+            me->CombatStop();
+            me->DeleteFromDB();
+            me->AddObjectToRemoveList();
+            uint32 id = me->GetEntry();
+            
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_NPCBOT);
+            //"DELETE FROM characters_npcbot WHERE entry = ?", CONNECTION_ASYNC
+            stmt->setUInt32(0, id);
+            CharacterDatabase.Execute(stmt);
+
+            break;
+        }
+        case GOSSIP_SENDER_FACTION: //thesawolf - set faction from gossip
+        {
+            subMenu = true;
+            
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Alliance", GOSSIP_SENDER_FACTION_ALLIANCE, GOSSIP_ACTION_INFO_DEF + 1);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "Horde", GOSSIP_SENDER_FACTION_HORDE, GOSSIP_ACTION_INFO_DEF + 1);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Monster", GOSSIP_SENDER_FACTION_MONSTER, GOSSIP_ACTION_INFO_DEF + 1);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Friend to all", GOSSIP_SENDER_FACTION_FRIEND, GOSSIP_ACTION_INFO_DEF + 1);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "(BACK)", 1, GOSSIP_ACTION_INFO_DEF + 1);
+
+            break;
+        }
+        case GOSSIP_SENDER_FACTION_ALLIANCE: //set alliance
+        {
+            uint32 faction = 1802;
+            me->setFaction(faction);
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_NPCBOT_FACTION);
+            //"UPDATE characters_npcbot SET faction = ? WHERE entry = ?", CONNECTION_SYNCH
+            stmt->setUInt32(0, faction);
+            stmt->setUInt32(1, me->GetEntry());
+            CharacterDatabase.DirectExecute(stmt);
+            
+            const_cast<CreatureTemplate*>(me->GetCreatureTemplate())->faction = faction;
+            me->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
+            me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
+            BotSay("For the Alliance!", player);
+            break;
+        }
+        case GOSSIP_SENDER_FACTION_HORDE: //set horde
+        {
+            uint32 faction = 1801;
+            me->setFaction(faction);
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_NPCBOT_FACTION);
+            //"UPDATE characters_npcbot SET faction = ? WHERE entry = ?", CONNECTION_SYNCH
+            stmt->setUInt32(0, faction);
+            stmt->setUInt32(1, me->GetEntry());
+            CharacterDatabase.DirectExecute(stmt);
+                        
+            const_cast<CreatureTemplate*>(me->GetCreatureTemplate())->faction = faction;
+            me->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
+            me->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
+            BotSay("For the Horde!", player);
+            break;
+        }
+        case GOSSIP_SENDER_FACTION_MONSTER: //set monster
+        {
+            uint32 faction = 14;
+            me->setFaction(faction);
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_NPCBOT_FACTION);
+            //"UPDATE characters_npcbot SET faction = ? WHERE entry = ?", CONNECTION_SYNCH
+            stmt->setUInt32(0, faction);
+            stmt->setUInt32(1, me->GetEntry());
+            CharacterDatabase.DirectExecute(stmt);
+                        
+            const_cast<CreatureTemplate*>(me->GetCreatureTemplate())->faction = faction;
+            me->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
+            me->HandleEmoteCommand(EMOTE_ONESHOT_RUDE);
+            BotSay("I hate everyone!", player);
+            break;
+        }
+        case GOSSIP_SENDER_FACTION_FRIEND: //set friendly to all
+        {
+            uint32 faction = 35;
+            me->setFaction(faction);
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_NPCBOT_FACTION);
+            //"UPDATE characters_npcbot SET faction = ? WHERE entry = ?", CONNECTION_SYNCH
+            stmt->setUInt32(0, faction);
+            stmt->setUInt32(1, me->GetEntry());
+            CharacterDatabase.DirectExecute(stmt);
+                        
+            const_cast<CreatureTemplate*>(me->GetCreatureTemplate())->faction = faction;
+            me->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
+            me->HandleEmoteCommand(EMOTE_ONESHOT_FLEX);
+            BotSay("Everyone loves me!", player);
+            break;
         }
         case GOSSIP_SENDER_CLASS: //food/drink (classes: MAGE)
         {
@@ -5169,11 +5277,13 @@ bool bot_minion_ai::OnGossipSelect(Player* player, Creature* creature/* == me*/,
             }
             else if (reason == -1)
             {
-                me->setFaction(14);
+                me->setFaction(35);
                 if (Creature* pet = me->GetBotsPet())
-                    pet->setFaction(14);
-                BotYell("Die!", player);
-                me->Attack(player, IsMelee());
+                    pet->setFaction(35);
+                // thesawolf - stop unhired reset npcbot from killing player
+                // BotYell("Die!", player);
+                // me->Attack(player, IsMelee());
+                BotSay("...", player);
                 break;
             }
             else
@@ -5240,7 +5350,7 @@ bool bot_minion_ai::OnGossipSelect(Player* player, Creature* creature/* == me*/,
 
             if (abort)
                 break;
-
+            // thesawolf - dismiss is annoying.. just delete
             mgr->RemoveBot(me->GetGUID(), BOT_REMOVE_DISMISS);
             if (Aura* bers = me->AddAura(BERSERK, me))
             {
@@ -5250,14 +5360,29 @@ bool bot_minion_ai::OnGossipSelect(Player* player, Creature* creature/* == me*/,
             }
             if (urand(1,100) <= 25)
             {
-                me->setFaction(14);
+                me->setFaction(35);
                 if (Creature* pet = me->GetBotsPet())
-                    pet->setFaction(14);
-                BotSay("Fool...", player);
-                me->Attack(player, IsMelee());
+                    pet->setFaction(35);
+                // thesawolf - 80 npcbot slaughtering you, isn't funny, make them passive aggressive
+                me->HandleEmoteCommand(EMOTE_ONESHOT_RUDE);
+                BotSay("You were a sucky boss anyways...", player);
+                //me->Attack(player, IsMelee());
             }
             else
-                BotSay("...", player);
+                me->HandleEmoteCommand(EMOTE_ONESHOT_WAVE);
+                BotSay("You are going to miss me...", player);
+
+            //thesawolf - instead of dismissing.. delete
+            //reason: bots go back to spawn normally.. which can be FAR away or in the oddest places
+            me->CombatStop();
+            me->DeleteFromDB();
+            me->AddObjectToRemoveList();
+            uint32 id = me->GetEntry();
+            
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_NPCBOT);
+            //"DELETE FROM characters_npcbot WHERE entry = ?", CONNECTION_ASYNC
+            stmt->setUInt32(0, id);
+            CharacterDatabase.Execute(stmt);
 
             break;
         }
@@ -6847,8 +6972,8 @@ void bot_minion_ai::InitFaction()
     stmt->setUInt32(0, me->GetEntry());
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
     ASSERT(result);
-
-    Field* field = result->Fetch();
+    
+    Field* field = result->Fetch();        
     uint32 faction = field[0].GetUInt32();
     me->setFaction(faction);
     const_cast<CreatureTemplate*>(me->GetCreatureTemplate())->faction = faction;
@@ -8097,7 +8222,6 @@ void bot_minion_ai::TeleportHome()
 {
     ASSERT(teleHomeEvent);
     //ASSERT(IAmFree());
-
     AbortTeleport();
 
     uint16 mapid;
