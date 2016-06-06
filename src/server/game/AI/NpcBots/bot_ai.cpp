@@ -2525,8 +2525,9 @@ void bot_minion_ai::CheckAuras(bool force)
                 {
                     if (_botclass == BOT_CLASS_HUNTER)
                     {
-                        if (me->GetSheath() != SHEATH_STATE_RANGED)
-                            me->SetSheath(SHEATH_STATE_RANGED);
+                        // thesawolf - testing a hunter ranged state bug
+                        //if (me->GetSheath() != SHEATH_STATE_RANGED)
+                        //    me->SetSheath(SHEATH_STATE_RANGED);
                     }
                     else if (me->GetSheath() != SHEATH_STATE_MELEE)
                         me->SetSheath(SHEATH_STATE_MELEE);
@@ -2535,8 +2536,8 @@ void bot_minion_ai::CheckAuras(bool force)
             else if (me->IsStandState() && me->GetSheath() != SHEATH_STATE_UNARMED && Rand() < 50)
             {
                 me->SetSheath(SHEATH_STATE_UNARMED);
-                if (_botclass == BOT_CLASS_HUNTER)
-                    me->HandleEmoteCommand(EMOTE_ONESHOT_CHEER);
+//                if (_botclass == BOT_CLASS_HUNTER)
+                    //me->HandleEmoteCommand(EMOTE_ONESHOT_CHEER);
             }
         }
 
@@ -3023,7 +3024,7 @@ void bot_minion_ai::_updateStandState() const
         me->SetStandState(UNIT_STAND_STATE_STAND);
     if (CanSit() && !me->IsInCombat() && !me->isMoving() &&
         (master->GetStandState() == UNIT_STAND_STATE_SIT || (me->GetInterruptMask() & AURA_INTERRUPT_FLAG_NOT_SEATED) || Feasting()) &&
-        me->GetStandState() == UNIT_STAND_STATE_STAND)
+        me->GetStandState() == UNIT_STAND_STATE_STAND	)
         me->SetStandState(UNIT_STAND_STATE_SIT);
 }
 //RATIONS

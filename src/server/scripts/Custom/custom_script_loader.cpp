@@ -239,6 +239,8 @@ void AddSC_script_bot_commands();
 //end Bots
 // World Channel Chat
 void AddSC_WorldChannelChat();
+// Mail Order Minion Catalogue
+void AddSC_momcat();
     
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
@@ -467,4 +469,6 @@ void AddCustomScripts()
     //end Bots
     // World Channel Chat
     AddSC_WorldChannelChat();
+    // Mail Order Minions Catalogue
+    AddSC_momcat();
 }
