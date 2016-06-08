@@ -1314,9 +1314,8 @@ void bot_minion_ai::SetStats(bool force, bool shapeshift)
     {
         me->SetLevel(mylevel);
         //thesawolf - lets add a ding here
-        Player* player;
         me->HandleEmoteCommand(EMOTE_ONESHOT_CHEER);
-        BotYell("DING!", player);        
+        BotYell("DING!", master);        
         force = true; //reinit spells/passives/other
     }
     if (force)
@@ -1714,10 +1713,6 @@ void bot_pet_ai::SetStats(bool force, bool /*unk*/)
     if (me->getLevel() != mylevel)
     {
         me->SetLevel(mylevel);
-        //thesawolf - lets add a ding here
-        Player* player;
-        me->HandleEmoteCommand(EMOTE_ONESHOT_CHEER);
-        BotYell("DING!", player);        
         force = true; //restore powers on lvl update
     }
     if (force)
@@ -1905,6 +1900,8 @@ void bot_pet_ai::SetStats(bool force, bool /*unk*/)
 //Emotion-based action
 void bot_ai::ReceiveEmote(Player* player, uint32 emote)
 {
+    // thesawolf - lets clear any running emotes first
+    me->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
     switch (emote)
     {
         // thesawolf - lets make the AI more personable
@@ -2526,8 +2523,8 @@ void bot_minion_ai::CheckAuras(bool force)
                     if (_botclass == BOT_CLASS_HUNTER)
                     {
                         // thesawolf - testing a hunter ranged state bug
-                        //if (me->GetSheath() != SHEATH_STATE_RANGED)
-                        //    me->SetSheath(SHEATH_STATE_RANGED);
+                        if (me->GetSheath() != SHEATH_STATE_RANGED)
+                            me->SetSheath(SHEATH_STATE_RANGED);
                     }
                     else if (me->GetSheath() != SHEATH_STATE_MELEE)
                         me->SetSheath(SHEATH_STATE_MELEE);
@@ -2536,8 +2533,8 @@ void bot_minion_ai::CheckAuras(bool force)
             else if (me->IsStandState() && me->GetSheath() != SHEATH_STATE_UNARMED && Rand() < 50)
             {
                 me->SetSheath(SHEATH_STATE_UNARMED);
-//                if (_botclass == BOT_CLASS_HUNTER)
-                    //me->HandleEmoteCommand(EMOTE_ONESHOT_CHEER);
+                if (_botclass == BOT_CLASS_HUNTER)
+                    me->HandleEmoteCommand(EMOTE_ONESHOT_CHEER);
             }
         }
 
@@ -2980,7 +2977,7 @@ void bot_minion_ai::_updateMountedState()
     if (master->IsMounted() && !me->IsMounted() && !master->IsInCombat() && !me->IsInCombat() && !me->GetVictim())
     {
         uint32 mount = 0;
-        Unit::AuraEffectList const &mounts = master->GetAuraEffectsByType(SPELL_AURA_MOUNTED);
+        Unit::AuraEffectList const& mounts = master->GetAuraEffectsByType(SPELL_AURA_MOUNTED);
         if (!mounts.empty())
         {
             //Winter Veil addition
@@ -3001,9 +2998,18 @@ void bot_minion_ai::_updateMountedState()
 
             if (!GetSpell(mount))
                 InitSpellMap(mount, true); //learn
-
-            if (doCast(me, mount))
+            
+            //thesawolf - docast wasn't applying mount aura properly
+            //if doCast(me, mount))
+            if (me->AddAura(mount, me))
             {
+                // thesawolf - let's give it some personality
+                me->HandleEmoteCommand(EMOTE_ONESHOT_CHEER);                
+                BotSay("Let's roll out!", master);
+                return;
+            } else {
+                BotSay("I have an issue with that mount, so I'm going to ride my chicken..", master);
+                me->AddAura(65927, me); //summons chicken mount
                 return;
             }
         }
@@ -4184,6 +4190,7 @@ void bot_ai::OnSpellHit(Unit* caster, SpellInfo const* spell)
             }
             else
                 me->SetSpeed(MOVE_RUN, master->GetSpeedRate(MOVE_RUN) * 1.25f);
+                me->SetSpeed(MOVE_WALK, master->GetSpeedRate(MOVE_RUN) * 1.25f);
         }
 
         //update stats

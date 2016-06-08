@@ -241,6 +241,7 @@ void AddSC_script_bot_commands();
 void AddSC_WorldChannelChat();
 // Mail Order Minion Catalogue
 void AddSC_momcat();
+void AddSC_GOMove_commandscript();
     
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
@@ -471,4 +472,5 @@ void AddCustomScripts()
     AddSC_WorldChannelChat();
     // Mail Order Minions Catalogue
     AddSC_momcat();
-}
+    AddSC_GOMove_commandscript();
+}	
