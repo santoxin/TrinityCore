@@ -510,8 +510,9 @@ void bot_minion_ai::_calculatePos(Position& pos)
         angle = myangle;
     mydist += std::max<float>(int8(followdist) - 30, 0) / 5.f; //0.f-9.f
     //mydist += followdist > 10 ? float(followdist - 10)/4.f : 0.f; //distance from 10+ is reduced
-    //mydist = std::min<float>(mydist, 35.f); //do not spread bots too much
-    mydist = std::max<float>(mydist - 5.f, 0.0f); //get bots closer
+    mydist = std::min<float>(mydist, 25.f); //do not spread bots too much
+    // thesawolf spread out
+    //mydist = std::max<float>(mydist - 5.f, 0.0f); //get bots closer
     angle += master->GetOrientation();
     float x(0),y(0),z(0);
     float size = me->GetObjectSize()/3.f;

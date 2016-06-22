@@ -17,4 +17,5 @@ CMakeLists.txt.user
 *.BASE.*
 *.LOCAL.*
 nbproject/*
+.idea/*
 DEADJOE
