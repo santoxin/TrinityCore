@@ -17,6 +17,9 @@ TODO:
 Implement Racial Abilities
 Quests
 I NEED MORE
+
+Further updates/features by: thesawolf (@ gmail . com) 
+Patch files available: SOONISH
 */
 const uint8 GroupIconsFlags[TARGETICONCOUNT] =
 {
@@ -172,7 +175,17 @@ void bot_ai::BotYell(char const* text, Player const* target) const
 
     me->Yell(text, LANG_UNIVERSAL, target);
 }
-
+//thesawolf - let's play sound
+bool bot_ai::PlaySound(uint32 emote)
+{
+    if (EmotesTextSoundEntry const* soundEntry = FindTextSoundEmoteFor(emote, me->getRace(), me->getGender()))
+    {
+        me->PlayDistanceSound(soundEntry->SoundId);
+        return true;
+    }
+    
+    return false;
+}
 bool bot_ai::SetBotOwner(Player* newowner)
 {
     ASSERT(newowner && "Trying to set NULL owner!!!");
@@ -510,8 +523,8 @@ void bot_minion_ai::_calculatePos(Position& pos)
         angle = myangle;
     mydist += std::max<float>(int8(followdist) - 30, 0) / 5.f; //0.f-9.f
     //mydist += followdist > 10 ? float(followdist - 10)/4.f : 0.f; //distance from 10+ is reduced
-    mydist = std::min<float>(mydist, 25.f); //do not spread bots too much
-    // thesawolf spread out
+    mydist = std::min<float>(mydist, 50.f); //do not spread bots too much
+    //thesawolf - spread out some
     //mydist = std::max<float>(mydist - 5.f, 0.0f); //get bots closer
     angle += master->GetOrientation();
     float x(0),y(0),z(0);
@@ -4428,8 +4441,9 @@ bool bot_minion_ai::OnGossipHello(Player* player, Creature* creature, uint32 /*o
             switch (creature->GetBotClass())
             {
                 case BOT_CLASS_MAGE:
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "I need food", GOSSIP_SENDER_CLASS, GOSSIP_ACTION_INFO_DEF + 1);
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "I need drink", GOSSIP_SENDER_CLASS, GOSSIP_ACTION_INFO_DEF + 2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "I need food", GOSSIP_SENDER_CLASS, GOSSIP_ACTION_INFO_DEF + 1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "I need drink", GOSSIP_SENDER_CLASS, GOSSIP_ACTION_INFO_DEF + 2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Can we get a portal?", GOSSIP_SENDER_PORTAL, GOSSIP_ACTION_INFO_DEF + 3);
                     menus = true;
                     break;
                 default:
@@ -4544,7 +4558,6 @@ bool bot_minion_ai::OnGossipSelect(Player* player, Creature* creature/* == me*/,
             CharacterDatabase.DirectExecute(stmt);
                         
             const_cast<CreatureTemplate*>(me->GetCreatureTemplate())->faction = faction;
-            me->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
             me->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
             BotSay("For the Horde!", player);
             break;
@@ -4560,7 +4573,6 @@ bool bot_minion_ai::OnGossipSelect(Player* player, Creature* creature/* == me*/,
             CharacterDatabase.DirectExecute(stmt);
                         
             const_cast<CreatureTemplate*>(me->GetCreatureTemplate())->faction = faction;
-            me->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
             me->HandleEmoteCommand(EMOTE_ONESHOT_RUDE);
             BotSay("I hate everyone!", player);
             break;
@@ -4576,11 +4588,202 @@ bool bot_minion_ai::OnGossipSelect(Player* player, Creature* creature/* == me*/,
             CharacterDatabase.DirectExecute(stmt);
                         
             const_cast<CreatureTemplate*>(me->GetCreatureTemplate())->faction = faction;
-            me->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
             me->HandleEmoteCommand(EMOTE_ONESHOT_FLEX);
             BotSay("Everyone loves me!", player);
             break;
         }
+        case GOSSIP_SENDER_PORTAL: //thesawolf - add in group portals for mages
+        {
+            subMenu = true;
+
+            //thesawolf - need to do faction/level-specific portals listing
+            uint32 portside = player->getFaction();
+            uint32 plevel = player->getLevel();
+
+            if (plevel < 40) // level check
+            {
+                BotWhisper("I can't summon portals yet.. sorry.", player);
+                //player->PlayerTalkClass->ClearMenus();
+                //return OnGossipHello(player, me);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "BACK", 1, GOSSIP_ACTION_INFO_DEF + 1);
+                break;            
+            } 
+                        
+            switch (portside) // faction check
+            {
+                case 1:
+                case 3:
+                case 4:
+                case 115:
+                case 1629: //alliance portals
+                {
+                    subMenu = true;
+                    
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Stormwind City", GOSSIP_SENDER_PORTCHOICE, GOSSIP_ACTION_INFO_DEF + 1);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ironforge",  GOSSIP_SENDER_PORTCHOICE, GOSSIP_ACTION_INFO_DEF + 2);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Darnassus",  GOSSIP_SENDER_PORTCHOICE, GOSSIP_ACTION_INFO_DEF + 3);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "The Exodar",  GOSSIP_SENDER_PORTCHOICE, GOSSIP_ACTION_INFO_DEF + 4);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Theramore",  GOSSIP_SENDER_PORTCHOICE, GOSSIP_ACTION_INFO_DEF + 5);
+                    if (plevel > 65) 
+                    {
+                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Shattrath City",  GOSSIP_SENDER_PORTCHOICE, GOSSIP_ACTION_INFO_DEF + 6);
+                    }
+                    if (plevel > 73)
+                    {
+                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Dalaran",  GOSSIP_SENDER_PORTCHOICE, GOSSIP_ACTION_INFO_DEF + 7);
+                    }
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "(BACK)", 1, GOSSIP_ACTION_INFO_DEF + 1); 
+                    break;
+                }
+                case 2:
+                case 5:
+                case 6:
+                case 116:
+                case 1610: //horde portals
+                {
+                    subMenu = true;
+                    
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Orgrimmar", GOSSIP_SENDER_PORTCHOICE, GOSSIP_ACTION_INFO_DEF + 8);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Thunder Bluff",  GOSSIP_SENDER_PORTCHOICE, GOSSIP_ACTION_INFO_DEF + 9);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Undercity",  GOSSIP_SENDER_PORTCHOICE, GOSSIP_ACTION_INFO_DEF + 10);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Silvermoon City",  GOSSIP_SENDER_PORTCHOICE, GOSSIP_ACTION_INFO_DEF + 11);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Stonard",  GOSSIP_SENDER_PORTCHOICE, GOSSIP_ACTION_INFO_DEF + 12);
+                    if (plevel > 65)
+                    {
+                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Shattrath City",  GOSSIP_SENDER_PORTCHOICE, GOSSIP_ACTION_INFO_DEF + 13);
+                    }
+                    if (plevel > 73)
+                    {
+                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Dalaran",  GOSSIP_SENDER_PORTCHOICE, GOSSIP_ACTION_INFO_DEF + 14);
+                    }
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "(BACK)", 1, GOSSIP_ACTION_INFO_DEF + 1);
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
+        case GOSSIP_SENDER_PORTCHOICE: //thesawolf - do the actual porting for mages
+        {
+            uint32 portlock = 0;
+            std::string locname;
+            uint32 portdest = 0;
+            
+            switch (action - GOSSIP_ACTION_INFO_DEF)
+            {
+                case 1:
+                {
+                    portlock = 10059;
+                    portdest = 17334;
+                    locname = "Stormwind City";
+                    break;
+                }
+                case 2:
+                {
+                    portlock = 11416;
+                    locname = "Ironforge";
+                    break;
+                }
+                case 3:
+                {
+                    portlock = 11419;
+                    locname = "Darnassus";
+                    break;
+                }
+                case 4:
+                {
+                    portlock = 32266;
+                    locname = "Exodar";
+                    break;
+                }
+                case 5:
+                {
+                    portlock = 49360;
+                    locname = "Theramore";
+                    break;
+                }
+                case 6: 
+                {
+                    portlock = 33691;
+                    locname = "Shattrath City";
+                    break;
+                }
+                case 7:
+                case 14:
+                {
+                    portlock = 53142;
+                    locname = "Dalaran";
+                    break;
+                }
+                case 8:
+                {
+                    portlock = 11417;
+                    locname = "Orgrimmar";
+                    break;
+                }
+                case 9:
+                {
+                    portlock = 11420;
+                    locname = "Thunder Bluff";
+                    break;
+                }
+                case 10:
+                {
+                    portlock = 11418;
+                    locname = "Undercity";
+                    break;
+                }
+                case 11:
+                {
+                    portlock = 32267;
+                    locname = "Silvermoon City";
+                    break;
+                }
+                case 12:
+                {
+                    portlock = 49361;
+                    locname = "Stonard";
+                    break;
+                }
+                case 13:
+                {
+                    portlock = 35717;
+                    locname = "Shattrath City";
+                    break;
+                }
+                default:
+                    break;
+            }
+
+            InitSpellMap(portlock);
+                        
+            //uint32 portload = InitSpell(me, portlock);
+            //SpellInfo const* Info = sSpellMgr->GetSpellInfo(portload);
+            //Spell* portspell = new Spell(me, Info, TRIGGERED_NONE, player->GetGUID());
+            //SpellCastTargets targets;
+            //targets.SetUnitTarget(player);
+            //targets.SetDst(portdest);
+            //TODO implement checkcast for bots
+            //SpellCastResult result = me->IsMounted() || CCed(me) ? SPELL_FAILED_CUSTOM_ERROR : portspell->CheckPetCast(player);
+            //if (result != SPELL_CAST_OK)
+            if (!doCast(me, portlock))
+            {
+                //portspell->finish(false);
+                //delete portspell;
+                BotSay("Oops! Something went wrong!", player);
+            }
+            else
+            {
+                //aftercastTargetGuid = player->GetGUID();
+                //portspell->prepare(&targets);
+                PlaySound(TEXT_EMOTE_TRAIN);
+                std::ostringstream chootext;
+                chootext << "All aboard the " << locname << " Express!";
+                BotYell(chootext.str().c_str(), player);
+            }
+            break;
+        }        
         case GOSSIP_SENDER_CLASS: //food/drink (classes: MAGE)
         {
             switch (_botclass)
@@ -5378,9 +5581,11 @@ bool bot_minion_ai::OnGossipSelect(Player* player, Creature* creature/* == me*/,
                 //me->Attack(player, IsMelee());
             }
             else
+            {
                 me->HandleEmoteCommand(EMOTE_ONESHOT_WAVE);
                 BotSay("You are going to miss me...", player);
-
+            }
+            
             //thesawolf - instead of dismissing.. delete
             //reason: bots go back to spawn normally.. which can be FAR away or in the oddest places
             me->CombatStop();
