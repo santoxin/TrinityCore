@@ -1410,6 +1410,10 @@ void World::LoadConfigSettings(bool reload)
 // Visit http://www.realmsofwarcraft.com/bb for forums and information
 //
 // End of prepatch
+
+    // prevent character rename on character customization
+    m_bool_configs[CONFIG_PREVENT_RENAME_CUSTOMIZATION] = sConfigMgr->GetBoolDefault("PreventRenameCharacterOnCustomization", false);
+
     // call ScriptMgr if we're reloading the configuration
     if (reload)
         sScriptMgr->OnConfigLoad(reload);
