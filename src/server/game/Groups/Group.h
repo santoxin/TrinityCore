@@ -327,6 +327,11 @@ class TC_GAME_API Group
         //Bot
         ObjectGuid const *GetTargetIcons() const { return m_targetIcons; }
 
+        // ai playerbot mod
+        ObjectGuid GetTargetIcon(int index) { return m_targetIcons[index]; }
+        Rolls* GetRolls() { return &RollId; }
+        // end
+
     protected:
         bool _setMembersGroup(ObjectGuid guid, uint8 group);
         void _homebindIfInstance(Player* player);

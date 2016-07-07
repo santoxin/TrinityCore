@@ -16,6 +16,8 @@ CMakeLists.txt.user
 *.BACKUP.*
 *.BASE.*
 *.LOCAL.*
+/cmake/
 nbproject/*
 .idea/*
 DEADJOE
+workspace

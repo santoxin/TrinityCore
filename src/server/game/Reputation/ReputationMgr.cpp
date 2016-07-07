@@ -372,12 +372,13 @@ bool ReputationMgr::SetOneFactionReputation(FactionEntry const* factionEntry, in
         }
 
         //Guild-Level-System (Bonus: Ruf)
+        //thesawolf - adjust bonus 0.5 and 1.0f was just WAY too much
         if (Guild* guild = _player->GetGuild())
         {
             if (guild->HasLevelForBonus(GUILD_BONUS_RUF_1))
-                standing += uint32(standing*0.05f);
+                standing += uint32(standing*0.01f);
             if (guild->HasLevelForBonus(GUILD_BONUS_RUF_2))
-                standing += uint32(standing*0.1f);
+                standing += uint32(standing*0.02f);
         }
 
         if (standing > Reputation_Cap)
