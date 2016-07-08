@@ -1111,7 +1111,7 @@ bool PlayerbotAI::TellMasterNoFacing(string text, PlayerbotSecurityLevel securit
         return false;
 
     if (sPlayerbotAIConfig.whisperDistance && !bot->GetGroup() && sRandomPlayerbotMgr.IsRandomBot(bot) &&
-            master->GetSession()->GetSecurity() < SEC_GAMEMASTER &&
+            master->GetSession()->GetSecurity() < SEC_PLAYER &&//SEC_GAMEMASTER && thesawolf
             (bot->GetMapId() != master->GetMapId() || bot->GetDistance(master) > sPlayerbotAIConfig.whisperDistance))
         return false;
 

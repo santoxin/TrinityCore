@@ -535,7 +535,7 @@ void RandomPlayerbotFactory::CreateRandomGuilds()
             sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Error creating guild %s", guildName.c_str());
             break;
         }
-
+        
         sGuildMgr->AddGuild(guild);
         sPlayerbotAIConfig.randomBotGuilds.push_back(guild->GetId());
     }
