@@ -9,23 +9,6 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-add_executable(vmap4assembler VMapAssembler.cpp)
-
-if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-  set_target_properties(vmap4assembler PROPERTIES LINK_FLAGS "-framework Carbon")
-endif()
-
-target_link_libraries(vmap4assembler
-  common
-  zlib)
-
-set_target_properties(vmap4assembler
-    PROPERTIES
-      FOLDER
-        "tools")
-
 if( UNIX )
-  install(TARGETS vmap4assembler DESTINATION tools)
-elseif( WIN32 )
-  install(TARGETS vmap4assembler DESTINATION "${CMAKE_INSTALL_PREFIX}")
+	configure_file(wowadmin.sh ${CMAKE_INSTALL_PREFIX}/bin/wowadmin.sh COPYONLY)
 endif()
