@@ -93,7 +93,7 @@ void PlayerbotHolder::OnBotLogin(Player * const bot)
 
     //thesawolf - autoset to master level
     uint32 level = master->getLevel();
-    uint32 blevel = bot>getLevel();
+    uint32 blevel = bot->getLevel();
     bot->SetLevel(level);
     bool skipit = 0;
     uint32 ldiff = 0;
