@@ -31,7 +31,7 @@
 #include "Language.h"
 #include "Log.h"
 
-#include "../../plugins/ahbot/AhBot.h"
+//#include "../../plugins/ahbot/AhBot.h" thesawolf - restore TC AH
 
 enum eAuctionHouse
 {
@@ -220,8 +220,8 @@ void AuctionHouseMgr::SendAuctionSuccessfulMail(AuctionEntry* auction, SQLTransa
             .AddMoney(profit)
             .SendMailTo(trans, MailReceiver(owner, auction->owner), auction, MAIL_CHECK_MASK_COPIED, sWorld->getIntConfig(CONFIG_MAIL_DELIVERY_DELAY));
 
-        // ahbot mod
-        auctionbot.Won(auction);
+        // ahbot mod - thesawolf - remove ike3 ahbot stuff
+        //auctionbot.Won(auction);
     }
 }
 
@@ -246,8 +246,8 @@ void AuctionHouseMgr::SendAuctionExpiredMail(AuctionEntry* auction, SQLTransacti
             .AddItem(pItem)
             .SendMailTo(trans, MailReceiver(owner, auction->owner), auction, MAIL_CHECK_MASK_COPIED, 0);
 
-        // ahbot mod
-        auctionbot.Expired(auction);
+        // ahbot mod - thesawolf - removing ike3 ahbot stuff
+        //auctionbot.Expired(auction);
     }
     else
     {

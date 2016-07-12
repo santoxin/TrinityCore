@@ -61,14 +61,15 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed)
         else
             break;
     }
-
     int botProcessed = 0;
     for (list<uint32>::iterator i = bots.begin(); i != bots.end(); ++i)
     {
         uint32 bot = *i;
         if (ProcessBot(bot))
+        {
             botProcessed++;
-
+        }
+        
         if (botProcessed >= randomBotsPerInterval)
             break;
     }
@@ -91,7 +92,7 @@ uint32 RandomPlayerbotMgr::AddRandomBot(bool alliance)
     SetEventValue(bot, "add", 1, urand(sPlayerbotAIConfig.minRandomBotInWorldTime, sPlayerbotAIConfig.maxRandomBotInWorldTime));
     uint32 randomTime = 30 + urand(sPlayerbotAIConfig.randomBotUpdateInterval, sPlayerbotAIConfig.randomBotUpdateInterval * 3);
     ScheduleRandomize(bot, randomTime);
-    sLog->outMessage("playerbot", LOG_LEVEL_DEBUG, "Random bot %d added", bot);
+    sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Random bot %d added", bot);
     return bot;
 }
 
@@ -134,7 +135,7 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
     Player* player = GetPlayerBot(bot);
     if (!player)
         return false;
-
+    
     PlayerbotAI* ai = player->GetPlayerbotAI();
     if (!ai)
         return false;
@@ -261,6 +262,7 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
     sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Preparing location to random teleporting bot %s for level %u", bot->GetName().c_str(), bot->getLevel());
 
     if (locsPerLevelCache[bot->getLevel()].empty()) {
+        //thesawolf - looking at logs, there might be a SQL error here - CHECK
         QueryResult results = WorldDatabase.PQuery("select map, position_x, position_y, position_z "
             "from (select map, position_x, position_y, position_z, avg(t.maxlevel), avg(t.minlevel), "
             "%u - (avg(t.maxlevel) + avg(t.minlevel)) / 2 delta "
@@ -331,9 +333,13 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, uint16 mapId, float teleX, 
 void RandomPlayerbotMgr::Randomize(Player* bot)
 {
     if (bot->getLevel() == 1)
+    {
         RandomizeFirst(bot);
+    }
     else
+    {
         IncreaseLevel(bot);
+    }
 }
 
 void RandomPlayerbotMgr::IncreaseLevel(Player* bot)
@@ -342,9 +348,13 @@ void RandomPlayerbotMgr::IncreaseLevel(Player* bot)
     uint32 level = min((uint32)(bot->getLevel() + 1), maxLevel);
     PlayerbotFactory factory(bot, level);
     if (bot->GetGuildId())
+    {
         factory.Refresh();
+    }
     else
+    {
         factory.Randomize();
+    }
     RandomTeleportForLevel(bot);
 }
 
@@ -528,7 +538,6 @@ vector<uint32> RandomPlayerbotMgr::GetFreeBots(bool alliance)
         } while (result->NextRow());
     }
 
-
     return guids;
 }
 
@@ -601,7 +610,7 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, cha
     }
     else if (cmd == "init" || cmd == "refresh" || cmd == "teleport")
     {
-		sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Randomizing bots for %d accounts", sPlayerbotAIConfig.randomBotAccounts.size());
+	sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Randomizing bots for %d accounts", sPlayerbotAIConfig.randomBotAccounts.size());
         list<uint32> botIds;
         for (list<uint32>::iterator i = sPlayerbotAIConfig.randomBotAccounts.begin(); i != sPlayerbotAIConfig.randomBotAccounts.end(); ++i)
         {

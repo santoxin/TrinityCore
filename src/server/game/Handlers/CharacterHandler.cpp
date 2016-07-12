@@ -48,8 +48,8 @@
 #include "Metric.h"
 
 // Playerbot mod:
-#include "../../plugins/playerbot/playerbot.h"
-#include "../../plugins/playerbot/PlayerbotAIConfig.h"
+#include "../../../plugins/playerbot/playerbot.h"
+#include "../../../plugins/playerbot/PlayerbotAIConfig.h"
 
 class LoginQueryHolder : public SQLQueryHolder
 {
@@ -82,15 +82,15 @@ public:
 void PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
 {
     // has bot already been added?
-	Player* bot = sObjectMgr->GetPlayerByLowGUID(playerGuid);
+    Player* bot = sObjectMgr->GetPlayerByLowGUID(playerGuid);
 
-	if (bot && bot->IsInWorld())
+    if (bot && bot->IsInWorld())
         return;
-
+        
     uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(ObjectGuid(playerGuid));
     if (accountId == 0)
         return;
-
+        
     PlayerbotLoginQueryHolder *holder = new PlayerbotLoginQueryHolder(this, masterAccount, accountId, playerGuid);
     if(!holder->Initialize())
     {

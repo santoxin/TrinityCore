@@ -95,7 +95,7 @@
 TC_GAME_API std::atomic<bool> World::m_stopEvent(false);
 TC_GAME_API uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
 // playerbot mod
-#include "../../plugins/ahbot/AhBot.h"
+//#include "../../plugins/ahbot/AhBot.h" //thesawolf - restore TC ahbot
 #include "../../plugins/playerbot/PlayerbotAIConfig.h"
 #include "../../plugins/playerbot/RandomPlayerbotMgr.h"
 
@@ -1960,7 +1960,7 @@ void World::SetInitialWorldSettings()
     Player::DeleteOldCharacters();
 
     TC_LOG_INFO("server.loading", "Initialize AuctionHouseBot...");
-    sAuctionBot->Initialize();
+    sAuctionBot->Initialize(); //thesawolf - TC ahbot
 
     // Delete all custom channels which haven't been used for PreserveCustomChannelDuration days.
     Channel::CleanOldChannelsInDB();
@@ -2034,10 +2034,11 @@ void World::SetInitialWorldSettings()
 
     if (uint32 realmId = sConfigMgr->GetIntDefault("RealmID", 0)) // 0 reserved for auth
         sLog->SetRealmId(realmId);
-
+/* thesawolf - restore TC ahbot
     TC_LOG_INFO("server.loading", "Initializing AuctionHouseBot...");
     auctionbot.Init();
-
+*/
+    // Initialize PlayerBots...
     sPlayerbotAIConfig.Initialize();
 }
 

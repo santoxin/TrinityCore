@@ -26,13 +26,13 @@ void LoadList(string value, T &list)
 
 bool PlayerbotAIConfig::Initialize()
 {
-    sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Initializing AI Playerbot by ike3, based on the original Playerbot by blueboy");
+    sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Initializing AI Playerbot by ike3/blueboy...");
 
     string error;
 	vector<string> args;
 
-/*
-    if (!config.LoadInitial("worldserver.conf", args, error))
+/* thesawolf - merged into worldserver.conf
+    if (!config.LoadInitial("aiplayerbot.conf", args, error))
     {
         sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "AI Playerbot is Disabled. Unable to open configuration file aiplayerbot.conf");
         return false;

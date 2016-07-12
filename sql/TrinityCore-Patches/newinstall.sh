@@ -49,6 +49,11 @@ echo "Applying Rochet objscale sql changes to allow for gob scaling..."
 mysql -u root -p45c3nt auth < auth.sql
 mysql -u root -p45c3nt world < world.sql
 cd ..
+echo "[GOMove]"
+cd ./GOMove
+echo "Applying Rochet GOMove spell targetting circle for GOMove..."
+mysql -u root -p45c3nt world < world.sql
+cd ..
 echo "[ReforgingSQL]"
 cd ./ReforgingSQL
 echo "Applying Rochet Reforger components..."
@@ -73,10 +78,11 @@ cd ./PlayerBots
 echo "Applying ike3 PlayerBots components..."
 mysql -u root -p45c3nt characters < characters_ai_playerbot.sql
 mysql -u root -p45c3nt characters < characters_auctionhousebot.sql
-mysql -u root -p45c3nt characters < characters_ai_playerbot_names.sql
+mysql -u root -p45c3nt characters < characters_ai_playerbot_names.sql			
 mysql -u root -p45c3nt characters < ai_playerbot_guild_names.sql
 mysql -u root -p45c3nt characters < characters_ai_playerbot_custom_strategy.sql
 mysql -u root -p45c3nt characters < characters_ai_playerbot_speech.sql
+mysql -u root -p45c3nt characters < characters_ai_playerbot_locks.sql
 cd ..
 echo "[LegacyTrinityCore]"
 cd ./LegacyTrinityCore

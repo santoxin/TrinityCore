@@ -23,6 +23,8 @@ SET time_zone = "+00:00";
 --
 -- Dumping data for table `item_loot_template`
 --
+DELETE FROM `item_loot_template` WHERE `Entry` = 50301;
+DELETE FROM `item_loot_template` WHERE `Entry` = 54218;
 
 REPLACE INTO `item_loot_template` (`Entry`, `Item`, `Reference`, `Chance`, `QuestRequired`, `LootMode`, `GroupId`, `MinCount`, `MaxCount`, `Comment`) VALUES
 (50301, 13582, 0, 7.69, 0, 1, 2, 1, 1, NULL),
