@@ -50,8 +50,8 @@ goes toward the known authors of those respective bot systems listed below:
 
 This guide is an ATTEMPT to better, and fully, document the commands and usage examples for the respective
 bot systems.   
-Please note that while every attempt is made to do so, this guide may not (nor ever) be
-100% complete or thorough (but I'll try).
+Please note that while every attempt is made to do so, this guide may not (nor ever) be 100% complete or thorough (but I'll try).
+
 ---------------------------------------
 ## NPCBOTS
 NPCBots are minion-like bots that have limited functionality and control. They follow you around, buff you, attack things and occassionally they can do class-specific things like summon drink/water, open portals, summon healthstones, etc. They are most handy at lower levels or outside dungeons/raids although they CAN do dungeons and raids, but expect some frustrations due to the lack of controls for them.
@@ -294,4 +294,5 @@ Development tends to change alot (and hopefully this guide will reflect that). T
 - **Version 0.1** (_13 July 2016_)  
     - NPCBot Information initial submit
         - added new info, reset, command, distance commands too
+
 --------------------------------------- 
