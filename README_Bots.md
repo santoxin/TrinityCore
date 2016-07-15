@@ -2,11 +2,11 @@
 *The Mega Manual of Minions....*   
 *blah..*   
 # [ THE BOTS GUIDE ]
->Compiled by: Thesawolf (@ Gmail dot Com)
+>Compiled by: Thesawolf (@ Gmail dot Com)   
 >Version 0.1 - 13 July 2016
 
 ---------------------------------------
-#### Sections
+#### Sections (clickable links to jump to each section)
 1. [Introduction](#introduction)
 2. [NPCBots](#npcbots)
     - [NPCBot Commands](#npcbot-commands)
@@ -244,7 +244,7 @@ Whether grouped or not, your NPCBot will follow you around, keeping you buffed a
 For the most part, go somewhere and they will follow. Simple as that.
 In those cases where following might not be safe or you want to proceed safely, you have a few options.
 
-**REFERENCE**: If an NPCBot is in your direct vicinity, you can target them and emote:
+**REFERENCE**: If your NPCBot is in your direct vicinity, you can target them and emote:
 - `/wait` to make your NPCBot stay put
 - `/followme` or `/beckon` to make your NPCBot follow you again
 
