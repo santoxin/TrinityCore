@@ -6,7 +6,7 @@
 >Version 0.1 - 13 July 2016
 
 ---------------------------------------
-#### Sections (clickable links to jump to each section)
+### Sections (clickable links to jump to each section)
 1. [Introduction](#introduction)
 2. [NPCBots](#npcbots)
     - [NPCBot Commands](#npcbot-commands)
@@ -37,7 +37,7 @@
 4. [Guide Changelog](#guide-changelog)
 
 ---------------------------------------
-#### Introduction
+## Introduction
 First and foremost, please be aware that I do NOT take credit for the the coding, development and
 documentation for all the marvels of engineering found in the "NPCBots" nor the "PlayerBots", that distinction
 goes toward the known authors of those respective bot systems listed below:
@@ -68,36 +68,36 @@ Some features of the NPCBots:
 - PvP (they can fight members of your opposing faction)
 - Summon Food/Drink (mages)
 - Summon Healthstones, Soulstones (warlocks)
-- Respond to every kind of emote (with an emote of their own and sometimes a witty remark)
-- Ride mounts
+- Emote responsiveness (will respond in various ways to any emote)
+- Riding mounts
 - Be placed in locations (for future hiring, or as a buff station, etc.)
 - Change their gear
 - Change their roles
 - etc...
 
-#### NPCBot Commands
+### NPCBot Commands
 Command references are current up to the date of this documentation (and includes the various enhancements) by myself and may not be applicable to all installations out there. If a command doesn't show up in the listing or gives an error message that it's invalid.. there's a good chance that install/repack doesn't have a "current" codebase.
 
 Also, please note that command access is dependent upon the installation you are using and some commands may not be
 available to all accounts (depending on their access level and permissions set in the RBAC tables). Optionally, you can make RBAC adjustments by yourself with tools such as phpmyadmin, HeidiSQL to the rbac tables in the 'auth' database, but that is beyond the scope of this document.
 ```
 KEY:
-< > (less/greater than)_ indicates information or action you need for the command, can be left out to list information
- |  (pipe character)_ indicates parameter options (i.e. this|that  = this OR that)
- -- (two dashes)_ indicates information follows about the command
+< > (less/greater than) indicates infon or action you need for the command, can be left out to list info
+ |  (pipe character) indicates parameter options (i.e. this|that  = this OR that)
+ -- (two dashes) indicates information follows about the command
 ```
 **COMMAND**: **`.npcbot`** (by itself will list all syntax available)
 - **`lookup <CLASS>`** -- lookup the available npcbot Name/ID by class#
-    - _CLASS_ = Class# of npcbots (i.e. 1 for WARRIORs)
+    - _CLASS_ = Class# of npcbots (i.e. 1 for WARRIORs)   
     **Example Usage**:
         - `.npcbot lookup` (to list all classes)
         - `.npcbot lookup 1` (to list all Warriors)
 - **`add <ENTRY>`** -- adds npcbot bypassing the price conditions
-	- _ENTRY_ = ID# of npcbot (obtained from lookup list)
+	- _ENTRY_ = ID# of npcbot (obtained from lookup list)   
 	**Example Usage**:
 	    - `.npcbot add 70001` (to add npcbot with ID 70001 from lookup list)
 - **`spawn <ENTRY>`** -- adds npcbot
-    - _ENTRY_ = ID# of npcbot (obtained from lookup list)
+    - _ENTRY_ = ID# of npcbot (obtained from lookup list)   
 	**Example Usage**:
         - `.npcbot spawn 70001` (to spawn npcbot with ID 70001 from lookup list)
 - **`set <faction|owner> TARGET`**
@@ -110,7 +110,7 @@ KEY:
 	- `owner <GUID|NAME> TARGET` -- sets ownership of a selected npcbot to a specific player
 		- _GUID_ = guID of a player (in database)
 		- _NAME_ = name of a player
-		- _TARGET_ = selected npcbot
+		- _TARGET_ = selected npcbot   
         **Example Usage:**
             - `.npcbot set` (displays list of subcommands)
 			- `.npcbot set faction` (displays list of subcommands for faction)
@@ -120,15 +120,15 @@ KEY:
 - **`remove TARGET`** -- frees npcbot from control.
     (_NOTE_: If an npcbot is selected, this will remove that specific npcbot or if a PLAYER is selected, this will remove ALL npcbots they own.
 The npcbot will then return to their spawned location.)
-	- _TARGET_ = selected npcbot OR npcbots OF selected player, _see note above_
+	- _TARGET_ = selected npcbot OR npcbots OF selected player, _see note above_   
 	    **Example Usage:**
         - `.npcbot remove TARGET` (removes the selected npcbot or npcbots of selected player)
 - **`delete TARGET`** -- deletes npcbot from control and active npcbot listing in database
-	- _TARGET_ = selected npcbot OR npcbots OF selected player
+	- _TARGET_ = selected npcbot OR npcbots OF selected player   
 	    **Example Usage:**
         - `.npcbot delete TARGET` (deletes the selected npcbot or npcbots of selected player)
 - **`revive TARGET`** -- revives selected npcbot. If player is selected, revives all npcbots of selected player)
-	- _TARGET_ = selected npcbot OR npcbots OF selected player
+	- _TARGET_ = selected npcbot OR npcbots OF selected player   
 		**Example Usage:**
         - `.npcbot revive TARGET` (revives dead, selected npcbot or npcbots of selected player)
 - **`cast`** -- dev only command and mostly deactivated code-wise
@@ -137,22 +137,22 @@ The npcbot will then return to their spawned location.)
 - **`command <COMMAND>`** -- forces ALL npcbot followers to either FOLLOW or STAY
 	- `command <s|st|stay|stand|f|fo|fol|follow>` -- sets the npcbot stances manually
 		- _s, st, stay, stand_ = STAY mode
-		- _f, fo, fol, follow_ = FOLLOW mode
+		- _f, fo, fol, follow_ = FOLLOW mode   
             **Example Usage:**
             - `.npcbot command stay` (selected npcbot will stay at location)
 	        - `.npcbot command follow` (selected npcbot will follow owner)
 - **`distance <#>`**  -- sets ALL npcbots follow distance from owner
     (*NOTE*: If set to **0**, npcbots will follow passively (not attacking anything) until owner attacks something)
-	- _#_ = value between 0 and 75 (75 being furthest distance away)
+	- _#_ = value between 0 and 75 (75 being furthest distance away)   
 		**Example Usage:**
         - `.npcbot distance 0` (selected npcbot will follow and not attack anything)
         - `.npcbot distance 75` (selected npcbot will follow you from furthest distance)
 
-#### NPCBot Control and Usage
-##### NPCBot Getting started
+### NPCBot Control and Usage
+#### NPCBot Getting started
 If this is your first time using an NPCBot, you'll need to do the following to get started:
 - `.npcbot lookup`
-    This will give you a listing of the available classes with an ID to indicate each class. For example, 1 could be the Class ID for Warriors.
+    This will give you a listing of the available classes with an ID to indicate each class. For example, 1 could be the Class ID for Warriors.   
     _Example Output_:
 ```
 .npcbot lookup #class
@@ -172,7 +172,7 @@ BOT_CLASS_BM = 12
 
 After you have figured out which class you want to lookup NPCBots in:
 - `.npcbot lookup 1`
-    For this example, we'll look for Warrior NPCBots.
+    For this example, we'll look for Warrior NPCBots.   
     _Example Output_:
 ```
 Looking for bots of class 1...
@@ -237,7 +237,7 @@ Right-clicking on the NPCBot will open a new _Gossip Menu_ with an assortment of
 For now, select ___Create Group___ and your NPCBot will join your group and you can begin your adventures!
 As mentioned previously, the other options will be discussed further down this document.
 
-##### NPCBot Getting Around
+#### NPCBot Getting Around
 
 Whether grouped or not, your NPCBot will follow you around, keeping you buffed along the way (if they can buff), healing you when needed (if it is a healer-type NPCBot), attacking things alongside you and even ressurecting you if you die (if they can ressurect, that is). NPCBots are designed to keep up to your run pace and will mount up on their own version of your mount when you do. In the event that they cannot keep up (due to you moving too fast or they being stuck in combat or in something), your NPCBot will eventually teleport to your location (even if you go into another zone). NOTE: NPCBots cannot teleport to you when you are in a dungeon, if they are not part of your group.
 
@@ -260,7 +260,7 @@ In the event your NPCBot is too far away to path to you, your NPCBot will telepo
 
 ___What happens to your NPCBot when you are not around?___ Don't worry... your NPCBot isn't hanging around outside the dungeon you decided to log out at. Unless, of course you spawned that NPCBot outside that dungeon. When you logout (or if your NPCBot is removed from control by other options), your NPCBot will return to their spawned location. If you picked up your NPCBot in Darnassus, it will return there. If you spawned your NPCBot on the road through the Barrens, it will return there. This can be both annoying and good, spawning NPCBots in a good central location (like in cities), will provide you an easy way to hire them (and coincidentally, they like to hang out and buff passerbys). However, spawning your NPCBot out in the middle of nowhere makes them rather inaccesible for rehire by other people (were you to release control). In situations like that, it is better to fire them (or delete them), so that they return to the spawnable NPCBot pool.
 
-##### NPCBot Equipment
+#### NPCBot Equipment
 
 NPCBots give you the ability to customize their individual gear pieces to make them more effective in combat. (NOTE: Changing their gear does NOT change their appearance, as the NPCBots utilize NPC models rather than individual gear piece models like Players do. The exception to this are weapons.)
 
@@ -295,7 +295,7 @@ As you can see, you can gear up pretty much every slot on your NPCBot (just reme
 - `Unequip all` will have them do just that.. unequip all gear you have given them and return them to YOUR bags. (NOTE: When firing an NPCBot, any gear you have given your NPCBot will automatically be returned to you)
 - `BACK` just goes back to the previous menu
 
-##### NPCBot Roles
+#### NPCBot Roles
 
 NPCBot Role management allows you to adjust how they operate overall. The available options are dependent upon the class of the NPCBot you are controlling. 
 
@@ -314,7 +314,7 @@ The roles are just as they state. If you want your NPCBot to make more of a tank
 
 NPCBot Roles are pretty straight foreword and it's recommended to only enable 1 or 2 specific roles for that class to minimize them switching tactics around alot. 
 
-##### NPCBot Formation
+#### NPCBot Formation
 Some times you just want your NPCBot close.. or far away as possible. The formation option allows you to adjust your NPCBot's distance from you.
 
 Select _Manage formation..._ from their post-hire Gossip menu to adjust the distance. You will see:
@@ -324,14 +324,14 @@ Select _Manage formation..._ from their post-hire Gossip menu to adjust the dist
 ```
 Selecting "_Set distance_" will open up a popup window that you can enter in an amount. This amount can be anywhere from **0** to **75**. Setting any higher than 75 will default to 75 and any lower than 0 to 0. As mentioned previously, setting the distance to 0 will result in the NPCBot PASSIVELY following you rather closely and not engaging mobs unless you attack. 
 
-##### NPCBot Abilities
+#### NPCBot Abilities
 NPCBots include a healthy sampling of real spells for each of the respective classes (NOTE: Not ALL class spells are represented or used). Some spells/abilities such as buffs, heals, remove curse/poison, etc. are available through an NPCBot's Ability menu. Additionally, some spells/abilities are only available when an NPCBot is at/over a certain level (much like real player restrictions)
 
 Selecting _Use ability..._ from the Gossip menu will give you a listing of the available spells/abilities that they can cast on you or for you. The "Update" option will refresh the spell listing and the "BACK" option works the same as all the other Back options.
 
 Not listed in the abilities is all the current spells/abilities that NPCBots use in COMBAT. These are usual class specific spells like Moonfire for Druids, etc. etc. Also, please note that the NPCBots are coded to use things like Root (Druids), Polymorph (Mages), Traps (Hunters), etc. for situations where CC (Crowd control) is needed. 
 
-##### NPCBot Grouping
+#### NPCBot Grouping
 Although NPCBots will follow their owner around grouped or ungrouped and will usually buff people outside their groups, selecting the ___Create Group___ option will have them join your group and properly utilize group buffs for everyone in the group.
 
 Grouping is required to properly utilize the DungeonFinder (as you cannot summon NPCBots in or into instances that are ungrouped)
@@ -342,7 +342,7 @@ Grouping is required to properly utilize the DungeonFinder (as you cannot summon
 
 >Also, it is advised to fire any additional NPCBots that you might own outside of the group as there have been reports of issues with some quest completions and Random dungeon daily rewards when NPCBots are active but not a part of a group.
 
-##### NPCBot Extras
+#### NPCBot Extras
 Depending upon the class of the NPCBot, there may be extra options found in the Gossip menu for that NPCBot.
 
 Most notably, Mage NPCBots will give present the options:
@@ -365,7 +365,7 @@ Lastly, all NPCBots will have the following extra options:
 - `You are fired` will delete the NPCBot from ownership and the game world and return them to the NPCBot pool for spawning. Deleting an NPCBot will make them return all gear you may have given them.
 - `Nevermind` will simply close out the Gossip menu
 
-#### NPCBot Database information
+### NPCBot Database information
 NPCBot data is stored in the following locations:
 - `characters` Database
     - `characters_npcbot` (this contains currently loaded npcbots)
@@ -385,7 +385,7 @@ in the `world` Database to those specific ids in the above tables (i.e. npcbot m
 
 Live NPCBots (currently spawned into the world) are found in the `characters` Database
 
-#### NPCBot System Usage information
+### NPCBot System Usage information
 Bots are counted as active objects (keep grids loaded like players).  
 Bots are being added to world at server loading (along with grids).  
 If 2 or more bots are located in same grid, only one grid is loaded.  
@@ -398,28 +398,28 @@ Current maximum bots to spawn: 245 (creature_template bot entries amount).
 ---------------------------------------
 ## PLAYERBOTS
 
-#### PlayerBot Commands
-##### PlayerBot Getting Started
+### PlayerBot Commands
+#### PlayerBot Getting Started
 
-##### PlayerBot Getting Around
+#### PlayerBot Getting Around
 
-##### PlayerBot Equipment
+#### PlayerBot Equipment
 
-##### PlayerBot Roles
+#### PlayerBot Roles
 
-##### PlayerBot Formation
+#### PlayerBot Formation
 
-##### PlayerBot Abilities
+#### PlayerBot Abilities
 
-##### PlayerBot Grouping
+#### PlayerBot Grouping
 
-##### PlayerBot Extras
+#### PlayerBot Extras
 
-#### PlayerBot Control and Usage
+### PlayerBot Control and Usage
 
-#### PlayerBot Database Information
+### PlayerBot Database Information
 
-#### PlayerBot System Usage Information
+### PlayerBot System Usage Information
 
 ---------------------------------------
 ## Guide Changelog
