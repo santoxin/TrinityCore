@@ -34,7 +34,8 @@
         - [PlayerBot Extras](#playerbot-extras)
     - [PlayerBot Database Information](#playerbot-database-information)
     - [PlayerBot System Usage Information](#playerbot-system-usage-information)
-4. [Guide Changelog](#guide-changelog)
+4. [Thesawolf Enhancements](#thesawolf-enhancements)
+5. [Guide Changelog](#guide-changelog)
 
 ---------------------------------------
 ## Introduction
@@ -420,6 +421,34 @@ Current maximum bots to spawn: 245 (creature_template bot entries amount).
 ### PlayerBot Database Information
 
 ### PlayerBot System Usage Information
+
+---------------------------------------
+## Thesawolf Enhancements
+Just providing this as reference to _some_ of the enhancements I've done to the NPCBot and PlayerBot codebases (doesn't neccessarily include references to all fixes I've done). Basicly, if you aren't seeing some of these functions in your repack, it's because your repack isn't using my current code commits. Please don't contact ME about it, contact your repack author to merge it in from my repo at: https://github.com/thesawolf/TrinityCore from my _TrinityCoreLegacy_ branch (but that's ultimately up to them). If you are a repack author or working on your own installation, please consider at least mentioning me in your credits or dropping me a line and saying thanks for the code features.
+
+### NPCBot Enhancements: (in no particular order)
+- Auto-set faction to owner faction at summoning (no more need to .npcbot set faction X)
+- Addition of "friend to all" faction options/fallback
+- Removed the NPCBot randomly attacking you after dismissing (yes, this was an actual coded in "feature" by the author)
+- Expanded pre-hire Gossip menu to include deleting and setting faction
+- Fixed NPCBots teleporting to master (segfault due to recent TC changes)
+- Fixed NPCBot mounting speed (due to recent TC changes)
+- Added in NPCBot responsiveness to 200+ emotes (they will usually say something witty and have an emote response of their own)
+- /wait emote response triggers NPCBot staying
+- /followme and /beckon emote response triggers NPCbot following
+- Updated dormant NPCbot commands to allow .npcbot info, reset, distance X, and command stay/follow
+- Expanded post-hire Gossip menu to include dismissing, reset owner, and firing (deleting)
+
+### PlayerBot Enhancements: (in no particular order)
+- Added in-depth .bot lookup feature (with graphical icons) to look for available bots (and alts)
+- Auto-set faction, auto-init, auto-summon upon adding
+- Fixed it so that the autosets weren't applying to alts summoned as playerbots
+- Added NotSoRandom toggle to allow for preset bots (with random fallback rather than full-blown random chargen)
+- Added ARAC (Any Race, Any Class) support toggle in the chargen process (still requires client ARAC support, tho)
+- Fixed .bot command segfault
+- Opened up a number of Playerbot commands to regular user level (rather than GM only)
+- Implemented some level checking so that playerbots don't re-init all the time when added (default within 3 levels range)
+- Added gearlock support toggle so that gearsets stay persistent through init/update/randoms (for those that like to dress their bots)
 
 ---------------------------------------
 ## Guide Changelog
