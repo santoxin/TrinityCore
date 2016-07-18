@@ -346,13 +346,29 @@ Grouping is required to properly utilize the DungeonFinder (as you cannot summon
 #### NPCBot Extras
 Depending upon the class of the NPCBot, there may be extra options found in the Gossip menu for that NPCBot.
 
-Most notably, Mage NPCBots will give present the options:
+Most notably, Mage NPCBots will present the options:
 ```
 - I need food
 - I need drink
+- Can we get a refreshment table?
+- Can we get a portal?
 ```
 These options will summon a stack of food or drink for you.
-(A summon portal option for Mages and summon health/soulstones or Warlocks is in the works too)
+If your level is high enough, the mage NPCBot can summon a refreshment table.
+Mage NPCBots can now summon portals (faction and level restrictions are
+applied, meaning your mage will not summon a portal to the opposite faction
+and will only summon portals that they would normally be able to summon at
+that level (no low level Shattrath portal)
+
+Additionally, Warlock NPCBots will present the options:
+```
+- I need a healthstone
+- I need a firestone
+- Can we get a soulwell?
+```
+These options will summon a healthstone or firestone for you.
+If your level is high enough, the warlock NPCBot can summon a soulwell.
+(Level restrictions are applied here, too)
 
 Lastly, all NPCBots will have the following extra options:
 ```
@@ -438,6 +454,9 @@ Just providing this as reference to _some_ of the enhancements I've done to the 
 - /followme and /beckon emote response triggers NPCbot following
 - Updated dormant NPCbot commands to allow .npcbot info, reset, distance X, and command stay/follow
 - Expanded post-hire Gossip menu to include dismissing, reset owner, and firing (deleting)
+- Fixed mage water/drink summoning
+- Added mage refreshment table summoning
+- Added warlock healthstone/firestones/soulwell summoning
 
 ### PlayerBot Enhancements: (in no particular order)
 - Added in-depth .bot lookup feature (with graphical icons) to look for available bots (and alts)
@@ -453,8 +472,6 @@ Just providing this as reference to _some_ of the enhancements I've done to the 
 ---------------------------------------
 ## Guide Changelog
 Development tends to change alot (and hopefully this guide will reflect that). This Changelog should help to see what might've hapened to a feature you THOUGHT was available or if a feature gets deprecated, you can get a timeline when it happened.
-- **Version 0.2** (_14 July 2016_)
-    - PlayerBot Information
 - **Version 0.1** (_13 July 2016_)
     - NPCBot Information initial submit
         - added new info, reset, command, distance commands too
