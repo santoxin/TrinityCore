@@ -104,7 +104,8 @@ ConditionMgr::ConditionTypeInfo const ConditionMgr::StaticConditionTypeData[COND
     { "Realm Achievement",    true, false, false },
     { "In Water",            false, false, false },
     { "Terrain Swap",        false, false, false },
-    { "Sit/stand state",      true,  true, false }
+    { "Sit/stand state",      true,  true, false },
+    { "Daily Quest Completed",true, false, false }
 };
 
 // Checks if object meets the condition
@@ -456,6 +457,12 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo) const
                     condMeets = CompareValues(static_cast<ComparisionType>(ConditionValue2), static_cast<uint32>(guild->GetLevel()), ConditionValue1);
             break;
         }
+        case CONDITION_DAILY_QUEST_DONE:
+        {
+            if (Player* player = object->ToPlayer())
+                condMeets = player->IsDailyQuestDone(ConditionValue1);
+            break;
+        }
         default:
             condMeets = false;
             break;
@@ -630,6 +637,9 @@ uint32 Condition::GetSearcherTypeMaskForCondition() const
             mask |= GRID_MAP_TYPE_MASK_CREATURE | GRID_MAP_TYPE_MASK_PLAYER;
             break;
         case CONDITION_GUILD_LEVEL:
+            mask |= GRID_MAP_TYPE_MASK_PLAYER;
+            break;
+        case CONDITION_DAILY_QUEST_DONE:
             mask |= GRID_MAP_TYPE_MASK_PLAYER;
             break;
         default:
@@ -1802,6 +1812,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond) const
         case CONDITION_QUESTTAKEN:
         case CONDITION_QUEST_NONE:
         case CONDITION_QUEST_COMPLETE:
+        case CONDITION_DAILY_QUEST_DONE:
         {
             if (!sObjectMgr->GetQuestTemplate(cond->ConditionValue1))
             {
