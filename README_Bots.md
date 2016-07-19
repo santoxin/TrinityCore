@@ -45,10 +45,10 @@ goes toward the known authors of those respective bot systems listed below:
 
 - PlayerBots (aka MaNGOS-Bots) by ike3 (https://github.com/ike3/mangosbot)  
 	Originally developed by Blueboy (https://github.com/playerbot/mangos)  
-	with various enhancements by Thesawolf [hey, that's me] (https://github.com/thesawolf/TrinityCore)
+	with various enhancements by Thesawolf (hey, that's me) (https://github.com/thesawolf/TrinityCore)
 - NPCBots (aka NewNPCBots, LordPsyanBots, MinionBots) by LordPsyan (https://bitbucket.org/lordpsyan/lordpsyan-patches)  
 	with numerous enhancements by Graff/Trickerer (https://bitbucket.org/trickerer/trinity-bots/src)  
-	and various enhancements by Thesawolf [hey, that's me again.. repo the same as previous] 
+	and various enhancements by Thesawolf (hey, that's me again.. repo the same as previous)
 
 This guide is an ATTEMPT to better, and fully, document the commands and usage examples for the respective
 bot systems.   
