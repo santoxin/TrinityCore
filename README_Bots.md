@@ -3,11 +3,13 @@
 *blah..*   
 # [ THE BOTS GUIDE ]
 >Compiled by: Thesawolf (@ Gmail dot Com)   
->Version 0.1 - 13 July 2016
+>Version 0.3 - 20 July 2016
 
 ---------------------------------------
 ### Sections (clickable links to jump to each section)
 1. [Introduction](#introduction)
+    - [Extended Credits](#extended-credits)
+    - [Donations](#donations)
 2. [NPCBots](#npcbots)
     - [NPCBot Commands](#npcbot-commands)
     - [NPCBot Control and Usage](#npcbot-control-and-usage)
@@ -19,6 +21,7 @@
         - [NPCBot Abilities](#npcbot-abilities)
         - [NPCBot Grouping](#npcbot-grouping)
         - [NPCBot Extras](#npcbot-extras)
+    - [NPCBot Config Settings](#npcbot-config-settings)
     - [NPCBot Database Information](#npcbot-database-information)
     - [NPCBot System Usage Information](#npcbot-system-usage-information)
 3. [PlayerBots](#playerbots)
@@ -32,6 +35,7 @@
         - [PlayerBot Abilities](#playerbot-abilities)
         - [PlayerBot Grouping](#playerbot-grouping)
         - [PlayerBot Extras](#playerbot-extras)
+    - [PlayerBot Config Settings](#playerbot-config-settings)
     - [PlayerBot Database Information](#playerbot-database-information)
     - [PlayerBot System Usage Information](#playerbot-system-usage-information)
 4. [Thesawolf Enhancements](#thesawolf-enhancements)
@@ -53,6 +57,31 @@ goes toward the known authors of those respective bot systems listed below:
 This guide is an ATTEMPT to better, and fully, document the commands and usage examples for the respective
 bot systems.   
 Please note that while every attempt is made to do so, this guide may not (nor ever) be 100% complete or thorough (but I'll try).
+
+### Extended Credits
+Beyond the original authors, I wanted to setup a little thanks area for those that helped contribute to my coding efforts (either through data
+submissions, great ideas/feedback or even donations). Yes, I'm putting this near the front because these folks obviously deserve to have their names
+acknowledged before you get into the nitty-gritty of the Bots.
+
+- [Conan513](http://www.ac-web.org/forums/member.php?234688-conan513gm)
+Thanking Conan for his excellent work on SPP and inclusion of alot of my work in
+it. As well as all the awesome feedback and thoughts about features/fixes.
+- [dmanbob](http://www.ac-web.org/forums/member.php?208219-dmanbob)
+Thanks to dmanbob for assistance with data needed for working on NPCBot
+lookup. His legwork saved me alot of time and frustration. Also, thanks for
+some of his feedback and some of his features/scripts I've used in the past
+(NPCs with smart scripts)
+
+### Donations
+Some folks mentioned putting up a donation link so I figured I'd put one up
+in here just in case anyone wanted to actually use it and so that no one
+confused where donations should go if I put the link up in someone's project
+thread (if you are going to donate, you should always donate to a project
+owner first.. they are the one that brings these to the masses, I just code in the
+background and don't want to detract from the awesome work on someone's
+repack)
+
+:+1: [PayPal Donation](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3DXNFF3T34HSS)
 
 ---------------------------------------
 ## NPCBOTS
@@ -382,6 +411,9 @@ Lastly, all NPCBots will have the following extra options:
 - `You are fired` will delete the NPCBot from ownership and the game world and return them to the NPCBot pool for spawning. Deleting an NPCBot will make them return all gear you may have given them.
 - `Nevermind` will simply close out the Gossip menu
 
+### NPCBot Config Settings
+(TODO: discuss the available config settings here)
+
 ### NPCBot Database information
 NPCBot data is stored in the following locations:
 - `characters` Database
@@ -472,6 +504,15 @@ Just providing this as reference to _some_ of the enhancements I've done to the 
 ---------------------------------------
 ## Guide Changelog
 Development tends to change alot (and hopefully this guide will reflect that). This Changelog should help to see what might've hapened to a feature you THOUGHT was available or if a feature gets deprecated, you can get a timeline when it happened.
+- **Version 0.3** (_20 July 2016_)   
+    - Jump to 0.3 since I added a bunch of information and didn't changelog
+      them properly (oops)   
+    - Added in and to the list of enhancements I'd coded for the Bots   
+    - Added info about the NPCBot Mage and Warlock extra Gossip functions   
+    - Added in section for NPCBot config file settings   
+    - Added in extended credits for those that helped along the way
+    - Added in a PayPal donation link (just in case and to keep it separate   
+      from any projects using some of my fixes/features)   
 - **Version 0.1** (_13 July 2016_)
     - NPCBot Information initial submit
         - added new info, reset, command, distance commands too
