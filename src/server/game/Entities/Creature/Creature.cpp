@@ -1991,9 +1991,17 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn, Seconds const& forceRespawn
     else
     {
         if (forceRespawnTimer > Seconds::zero())
+        {
             m_respawnTime = time(NULL) + m_respawnDelay;
+            SaveRespawnTime(forceRespawnTimer.count());
+        }
+        else
+        {
+            uint32 respawnDelay = m_respawnDelay;
+            m_respawnTime = time(NULL) + respawnDelay;
+            SaveRespawnTime(0, false);
+        }
 
-        SaveRespawnTime(forceRespawnTimer.count());
         AddObjectToRemoveList();
     }
 }
