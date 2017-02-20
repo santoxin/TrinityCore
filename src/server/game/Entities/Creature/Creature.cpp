@@ -384,7 +384,9 @@ void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
         if (setSpawnTime)
         {
             uint32 respawnDelay = m_respawnDelay;
-            m_respawnTime = time(NULL) + respawnDelay;
+            if (setSpawnTime)
+                m_respawnTime = std::max<time_t>(time(NULL) + respawnDelay, m_respawnTime);
+
             SaveRespawnTime(0, false);
         }
         AddObjectToRemoveList();
@@ -1815,7 +1817,12 @@ void Creature::setDeathState(DeathState s)
                 m_respawnTime = time(NULL) + m_respawnDelay + m_corpseDelay;
         }
         else
-            m_respawnTime = time(NULL) + m_respawnDelay;
+        {
+            if (IsDungeonBoss() && !m_respawnDelay)
+                m_respawnTime = std::numeric_limits<time_t>::max(); // never respawn in this instance
+            else
+                m_respawnTime = time(NULL) + m_respawnDelay;
+        }
 
         // always save boss respawn time at death to prevent crash cheating
         if (sWorld->getBoolConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY) || isWorldBoss())
