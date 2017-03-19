@@ -101,7 +101,8 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
     // Prevent cheating on C++ scripted menus
     if (_player->PlayerTalkClass->GetGossipMenu().GetSenderGUID() != guid)
         return;
-
+	
+	Item* item = NULL;
     Creature* unit = NULL;
     GameObject* go = NULL;
     if (guid.IsCreatureOrVehicle())
@@ -122,6 +123,15 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
             return;
         }
     }
+	else if (guid.IsItem())
+	{
+		item = _player->GetItemByGuid(guid);
+		if (!item || _player->IsBankPos(item->GetPos()))
+		{
+			TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - %s not found", guid.ToString().c_str());
+			return;
+		}
+	}
     else
     {
         TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - unsupported %s.", guid.ToString().c_str());
@@ -150,6 +160,10 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
             if (!sScriptMgr->OnGossipSelectCode(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId), code.c_str()))
                 _player->OnGossipSelect(unit, gossipListId, menuId);
         }
+		else if (item)
+		{
+			sScriptMgr->OnGossipSelectCode(_player, item, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId), code.c_str());
+		}
         else
         {
             go->AI()->GossipSelectCode(_player, menuId, gossipListId, code.c_str());
@@ -165,6 +179,10 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
             if (!sScriptMgr->OnGossipSelect(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId)))
                 _player->OnGossipSelect(unit, gossipListId, menuId);
         }
+		else if (item)
+		{
+			sScriptMgr->OnGossipSelect(_player, item, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId));
+		}
         else
         {
             go->AI()->GossipSelect(_player, menuId, gossipListId);

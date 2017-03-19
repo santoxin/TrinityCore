@@ -219,8 +219,12 @@
 
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
+void AddSC_wowbook();
+
 void AddCustomScripts()
 {
+	AddSC_wowbook();
+	
 // end01
 // end02
 // end03

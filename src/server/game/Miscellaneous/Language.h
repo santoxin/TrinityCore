@@ -1199,7 +1199,14 @@ enum TrinityStrings
     LANG_BG_SA_HORDE_CAPTURED_RELIC         = 10064, //The Horde captured the titan portal!
     LANG_BG_SA_ROUND_TWO_ONE_MINUTE         = 10065, //Round 2 of the Battle for the Strand of the Ancients begins in 1 minute.
     LANG_BG_SA_ROUND_TWO_START_HALF_MINUTE  = 10066, //Round 2 begins in 30 seconds. Prepare yourselves!
-
+	
+	//wowbook
+	LANG_WOWBOOK_QUERY_MONEY			= 10079,
+	LANG_WOWBOOK_CAREER_SKILL			= 10080,
+	LANG_WOWBOOK_SHOP					= 10081,
+	LANG_WOWBOOK_RIDER					= 10082,
+	LANG_WOWBOOK_QUERY_MEMBERSHIP		= 10083,
+	
     // Use for custom patches             11000-11999
     LANG_AUTO_BROADCAST                 = 11000,
     LANG_INVALID_REALMID                = 11001,
