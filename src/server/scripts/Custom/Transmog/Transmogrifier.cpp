@@ -54,7 +54,7 @@ namespace
         {
             WorldSession* session = player->GetSession();
             if (sTransmogrification->EnableTransmogInfo)
-                AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/INV_Misc_Book_11:30:30:-18:0|tHow transmogrification works", EQUIPMENT_SLOT_END + 9, 0);
+                AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_TRANSMOG_INTRO), EQUIPMENT_SLOT_END + 9, 0);
             for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
             {
                 if (const char* slotName = sTransmogrification->GetSlotName(slot, session))
@@ -67,10 +67,10 @@ namespace
             }
 #ifdef PRESETS
             if (sTransmogrification->EnableSets)
-                AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/RAIDFRAME/UI-RAIDFRAME-MAINASSIST:30:30:-18:0|tManage sets", EQUIPMENT_SLOT_END + 4, 0);
+                AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_TRANSMOG_MANAGESET), EQUIPMENT_SLOT_END + 4, 0);
 #endif
-            AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/INV_Enchant_Disenchant:30:30:-18:0|tRemove all transmogrifications", EQUIPMENT_SLOT_END + 2, 0, "Remove transmogrifications from all equipped items?", 0, false);
-            AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|tUpdate menu", EQUIPMENT_SLOT_END + 1, 0);
+            AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_TRANSMOG_REMOVEALL), EQUIPMENT_SLOT_END + 2, 0, player->GetSession()->GetTrinityString(LANG_TRANSMOG_REMOVEALL_CONFIRM), 0, false);
+            AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_TRANSMOG_UPDATEMENU), EQUIPMENT_SLOT_END + 1, 0);
             SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
             return true;
         }
@@ -129,7 +129,7 @@ namespace
                         return true;
                     }
                     if (sTransmogrification->EnableSetInfo)
-                        AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/INV_Misc_Book_11:30:30:-18:0|tHow sets work", EQUIPMENT_SLOT_END + 10, 0);
+                        AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_TRANSMOG_SETINTRO), EQUIPMENT_SLOT_END + 10, 0);
 
                     if (!player->presetMap.empty())
                     {
@@ -137,11 +137,11 @@ namespace
                             AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/INV_Misc_Statue_02:30:30:-18:0|t" + it->second.name, EQUIPMENT_SLOT_END + 6, it->first);
 
                         if (player->presetMap.size() < sTransmogrification->MaxSets)
-                            AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/GuildBankFrame/UI-GuildBankFrame-NewTab:30:30:-18:0|tSave set", EQUIPMENT_SLOT_END + 8, 0);
+                            AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_TRANSMOG_SAVESET), EQUIPMENT_SLOT_END + 8, 0);
                     }
                     else
-                        AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/GuildBankFrame/UI-GuildBankFrame-NewTab:30:30:-18:0|tSave set", EQUIPMENT_SLOT_END + 8, 0);
-                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|tBack..", EQUIPMENT_SLOT_END + 1, 0);
+                        AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_TRANSMOG_SAVESET), EQUIPMENT_SLOT_END + 8, 0);
+                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_SLOT_NAME_BACK), EQUIPMENT_SLOT_END + 1, 0);
                     SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
                 } break;
                 case EQUIPMENT_SLOT_END + 5: // Use preset
@@ -181,9 +181,9 @@ namespace
                     for (PresetslotMapType::const_iterator it2 = it->second.slotMap.begin(); it2 != it->second.slotMap.end(); ++it2)
                         AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, sTransmogrification->GetItemIcon(it2->second, 30, 30, -18, 0) + sTransmogrification->GetItemLink(it2->second, session), sender, action);
 
-                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/INV_Misc_Statue_02:30:30:-18:0|tUse set", EQUIPMENT_SLOT_END + 5, action, "Using this set for transmogrify will bind transmogrified items to you and make them non-refundable and non-tradeable.\nDo you wish to continue?\n\n" + it->second.name, 0, false);
-                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/PaperDollInfoFrame/UI-GearManager-LeaveItem-Opaque:30:30:-18:0|tDelete set", EQUIPMENT_SLOT_END + 7, action, "Are you sure you want to delete " + it->second.name + "?", 0, false);
-                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|tBack..", EQUIPMENT_SLOT_END + 4, 0);
+                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_TRANSMOG_USESET), EQUIPMENT_SLOT_END + 5, action, player->GetSession()->GetTrinityString(LANG_TRANSMOG_USESET_CONFIRM) + it->second.name, 0, false);
+                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_TRANSMOG_DELSET), EQUIPMENT_SLOT_END + 7, action, player->GetSession()->GetTrinityString(LANG_TRANSMOG_DELSET_CONFIRM) + it->second.name + "?", 0, false);
+                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_SLOT_NAME_BACK), EQUIPMENT_SLOT_END + 4, 0);
                     SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
                 } break;
                 case EQUIPMENT_SLOT_END + 7: // Delete preset
@@ -235,20 +235,20 @@ namespace
                         }
                     }
                     if (canSave)
-                        AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/GuildBankFrame/UI-GuildBankFrame-NewTab:30:30:-18:0|tSave set", 0, 0, "Insert set name", cost*sTransmogrification->SetCostModifier + sTransmogrification->SetCopperCost, true);
-                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|tUpdate menu", sender, action);
-                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|tBack..", EQUIPMENT_SLOT_END + 4, 0);
+                        AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_TRANSMOG_SAVESET), 0, 0, player->GetSession()->GetTrinityString(LANG_TRANSMOG_INSERTNAME), cost*sTransmogrification->SetCostModifier + sTransmogrification->SetCopperCost, true);
+                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_TRANSMOG_UPDATEMENU), sender, action);
+                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_SLOT_NAME_BACK), EQUIPMENT_SLOT_END + 4, 0);
                     SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
                 } break;
                 case EQUIPMENT_SLOT_END + 10: // Set info
                 {
-                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|tBack..", EQUIPMENT_SLOT_END + 4, 0);
+                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_SLOT_NAME_BACK), EQUIPMENT_SLOT_END + 4, 0);
                     SendGossipMenuFor(player, sTransmogrification->SetNpcText, creature->GetGUID());
                 } break;
 #endif
                 case EQUIPMENT_SLOT_END + 9: // Transmog info
                 {
-                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|tBack..", EQUIPMENT_SLOT_END + 1, 0);
+                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_SLOT_NAME_BACK), EQUIPMENT_SLOT_END + 1, 0);
                     SendGossipMenuFor(player, sTransmogrification->TransmogNpcText, creature->GetGUID());
                 } break;
                 default: // Transmogrify
@@ -407,9 +407,9 @@ namespace
                 }
             }
 
-            AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/INV_Enchant_Disenchant:30:30:-18:0|tRemove transmogrification", EQUIPMENT_SLOT_END + 3, slot, "Remove transmogrification from the slot?", 0, false);
-            AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|tUpdate menu", EQUIPMENT_SLOT_END, slot);
-            AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "|TInterface/ICONS/Ability_Spy:30:30:-18:0|tBack..", EQUIPMENT_SLOT_END + 1, 0);
+            AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_TRANSMOG_REMOVE), EQUIPMENT_SLOT_END + 3, slot, player->GetSession()->GetTrinityString(LANG_TRANSMOG_REMOVE_CONFIRM), 0, false);
+            AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_TRANSMOG_UPDATEMENU), EQUIPMENT_SLOT_END, slot);
+            AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_SLOT_NAME_BACK), EQUIPMENT_SLOT_END + 1, 0);
             SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
         }
     };
