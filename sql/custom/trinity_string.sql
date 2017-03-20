@@ -1042,3 +1042,48 @@ values (15084,"Summon trainer successfully","您临时召唤了一个训练师�
 
 REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
 values (15085,"Summon trainer failed!","召唤训练师失败");
+
+SET @STRING_ENTRY := 11100;
+REPLACE INTO `trinity_string` (`entry`, `content_default`,`content_loc4`,`content_loc5`) VALUES
+(@STRING_ENTRY+0, 'Item transmogrified','装备已被幻化','装备已被幻化'),
+(@STRING_ENTRY+1, 'Equipment slot is empty','装备槽是空的','装备槽是空的'),
+(@STRING_ENTRY+2, 'Invalid source item selected','选择的要被幻化的装备无效','选择的要被幻化的装备无效'),
+(@STRING_ENTRY+3, 'Source item does not exist','要被幻化的装备不存在','要被幻化的装备不存在'),
+(@STRING_ENTRY+4, 'Destination item does not exist','幻化材料装备不存在','幻化材料装备不存在'),
+(@STRING_ENTRY+5, 'Selected items are invalid','选择的装备无效','选择的装备无效'),
+(@STRING_ENTRY+6, 'Not enough money','兜里没钱啊','兜里没钱啊'),
+(@STRING_ENTRY+7, 'You don\'t have enough tokens','没有足够的令牌','没有足够的令牌'),
+(@STRING_ENTRY+8, 'Transmogrifications removed','幻化已经被复原','幻化已经被复原'),
+(@STRING_ENTRY+9, 'There are no transmogrifications','没有幻化过的装备','没有幻化过的装备'),
+(@STRING_ENTRY+10, 'Invalid name inserted','插入名字无效','插入名字无效');
+
+
+REPLACE INTO `trinity_string` (`entry`, `content_default`,`content_loc4`,`content_loc5`) VALUES
+(15100, '|TInterface/ICONS/INV_Misc_Book_11:30:30:-18:0|tHow transmogrification works','|TInterface/ICONS/INV_Misc_Book_11:30:30:-18:0|t幻化介绍','|TInterface/ICONS/INV_Misc_Book_11:30:30:-18:0|t幻化介绍'),
+(15101, 'Head','头盔','头盔'),
+(15102, 'Shoulders','护肩','护肩'),
+(15103, 'Shirt','衣服','衣服'),
+(15104, 'Chest','胸甲','胸甲'),
+(15105, 'Waist','护腰','护腰'),
+(15106, 'Legs','护腿','护腿'),
+(15107, 'Feet','鞋子','鞋子'),
+(15108, 'Wrists','护腕','护腕'),
+(15109, 'Hands','手套','手套'),
+(15110, 'Back','返回..','返回..'),
+(15111, 'Main hand','主武器','主武器'),
+(15112, 'Off hand','副武器','副武器'),
+(15113, 'Ranged','远程','远程'),
+(15114, 'Tabard','斗篷','斗篷'),
+(15115, '|TInterface/RAIDFRAME/UI-RAIDFRAME-MAINASSIST:30:30:-18:0|tManage sets','|TInterface/RAIDFRAME/UI-RAIDFRAME-MAINASSIST:30:30:-18:0|t幻化套装管理','|TInterface/RAIDFRAME/UI-RAIDFRAME-MAINASSIST:30:30:-18:0|t幻化套装管理'),
+(15116, '|TInterface/ICONS/INV_Enchant_Disenchant:30:30:-18:0|tRemove all transmogrifications','|TInterface/ICONS/INV_Enchant_Disenchant:30:30:-18:0|t移除所有幻化','|TInterface/ICONS/INV_Enchant_Disenchant:30:30:-18:0|t移除所有幻化'),
+(15117, '|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|tUpdate menu','|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|t更新菜单','|TInterface/PaperDollInfoFrame/UI-GearManager-Undo:30:30:-18:0|t更新菜单'),
+(15118, 'Remove transmogrifications from all equipped items?','请确认是否要去除所有装备的幻化效果？','请确认是否要去除所有装备的幻化效果？'),
+(15119, '|TInterface/ICONS/INV_Misc_Book_11:30:30:-18:0|tHow sets work','|TInterface/ICONS/INV_Misc_Book_11:30:30:-18:0|t套装介绍','|TInterface/ICONS/INV_Misc_Book_11:30:30:-18:0|t套装介绍'),
+(15120, '|TInterface/GuildBankFrame/UI-GuildBankFrame-NewTab:30:30:-18:0|tSave set','|TInterface/GuildBankFrame/UI-GuildBankFrame-NewTab:30:30:-18:0|tS保存套装','|TInterface/GuildBankFrame/UI-GuildBankFrame-NewTab:30:30:-18:0|tS保存套装'),
+(15121, '|TInterface/ICONS/INV_Misc_Statue_02:30:30:-18:0|tUse set','|TInterface/ICONS/INV_Misc_Statue_02:30:30:-18:0|t使用套装','|TInterface/ICONS/INV_Misc_Statue_02:30:30:-18:0|t使用套装'),
+(15122, '|TInterface/PaperDollInfoFrame/UI-GearManager-LeaveItem-Opaque:30:30:-18:0|tDelete set','|TInterface/PaperDollInfoFrame/UI-GearManager-LeaveItem-Opaque:30:30:-18:0|t删除套装','|TInterface/PaperDollInfoFrame/UI-GearManager-LeaveItem-Opaque:30:30:-18:0|t删除套装'),
+(15123, 'Using this set for transmogrify will bind transmogrified items to you and make them non-refundable and non-tradeable.\nDo you wish to continue?\n\n','使用这套幻化套装将使你相关装备与你绑定，并且这些装备无法被交易或退还。\n是否继续？\n\n','使用这套幻化套装将使你相关装备与你绑定，并且这些装备无法被交易或退还。\n是否继续？\n\n'),
+(15124, 'Are you sure you want to delete ','请确认是否删除','请确认是否删除'),
+(15125, 'Insert set name ','请输入套装名称','请输入套装名称'),
+(15126, '|TInterface/ICONS/INV_Enchant_Disenchant:30:30:-18:0|tRemove transmogrification','|TInterface/ICONS/INV_Enchant_Disenchant:30:30:-18:0|t移除幻化','|TInterface/ICONS/INV_Enchant_Disenchant:30:30:-18:0|t移除幻化'),
+(15127, 'Remove transmogrification from the slot?','是否从装备槽中移除幻化效果？','是否从装备槽中移除幻化效果？');
