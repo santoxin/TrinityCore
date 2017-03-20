@@ -197,11 +197,14 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
     TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_WHO Message");
 
     uint32 matchCount = 0;
-
+	uint32 max_who = sWorld->getIntConfig(CONFIG_MAX_WHO);
     uint32 levelMin, levelMax, racemask, classmask, zonesCount, strCount;
     uint32 zoneids[10];                                     // 10 is client limit
     std::string packetPlayerName, packetGuildName;
 
+	bool searchBool = false;
+    std::string searchName;
+	
     recvData >> levelMin;                                   // maximal player level, default 0
     recvData >> levelMax;                                   // minimal player level, default 100 (MAX_LEVEL)
     recvData >> packetPlayerName;                           // player name, case sensitive...
@@ -240,6 +243,8 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
             continue;
 
         wstrToLower(str[i]);
+		searchBool = true;
+        searchName = temp.c_str();
 
         TC_LOG_DEBUG("network", "String %u: %s", i, temp.c_str());
     }
@@ -346,7 +351,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
 
         // 49 is maximum player count sent to client - can be overridden
         // through config, but is unstable
-        if ((matchCount++) >= sWorld->getIntConfig(CONFIG_MAX_WHO))
+        if ((matchCount++) >= max_who)
             continue;
 
         data << target.GetPlayerName();                   // player name
@@ -360,7 +365,45 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
         ++displayCount;
     }
 
-    data.put(0, displayCount);                            // insert right count, count displayed
+    if (sWorld->getBoolConfig(CONFIG_FAKE_WHO_LIST) && displaycount < max_who)
+    {
+        //const char fake_players_db = (searchBool ? FAKE_CHAR_ONLINE_SEARCH : FAKE_CHAR_ONLINE);
+        PreparedStatement* fake = CharacterDatabase.GetPreparedStatement(searchBool ? FAKE_CHAR_ONLINE_SEARCH : FAKE_CHAR_ONLINE);
+
+        fake->setUInt32(0, sWorld->getIntConfig(CONFIG_FAKE_WHO_ONLINE_INTERVAL));
+        if (searchBool)
+            fake->setString(1, searchName);
+
+        PreparedQueryResult fakeresult = CharacterDatabase.Query(fake);
+        if (fakeresult)
+        {
+            do
+            {
+                Field *fields = fakeresult->Fetch();
+
+                std::string pname = fields[0].GetString();  // player name
+                std::string gname;                          // guild name
+                uint32 lvl = fields[3].GetUInt32();         // player level
+                uint32 class_ = fields[2].GetUInt32();      // player class
+                uint32 race = fields[1].GetUInt32();        // player race
+                uint32 pzoneid = fields[4].GetUInt32();     // player zone id
+                uint8 gender = fields[5].GetUInt8();        // player gender
+
+                data << pname;                              // player name
+                data << gname;                              // guild name
+                data << uint32(lvl);                        // player level
+                data << uint32(class_);                     // player class
+                data << uint32(race);                       // player race
+                data << uint8(gender);                      // player gender
+                data << uint32(pzoneid);                    // player zone id
+
+                if ((++matchcount) == max_who)
+                    break;
+            } while (fakeresult->NextRow());
+        }
+    }
+
+    data.put(0, matchcount);
     data.put(4, matchCount);                              // insert right count, count of matches
 
     SendPacket(&data);

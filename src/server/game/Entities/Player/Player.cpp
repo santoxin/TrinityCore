@@ -1476,6 +1476,16 @@ void Player::Update(uint32 p_time)
             // m_nextSave reset in SaveToDB call
             SaveToDB();
             TC_LOG_DEBUG("entities.player", "Player::Update: Player '%s' (%s) saved", GetName().c_str(), GetGUID().ToString().c_str());
+            if (sWorld->getBoolConfig(CONFIG_FAKE_WHO_LIST))
+            {
+                CharacterDatabase.PExecute("UPDATE characters_fake SET level = level+1, lastup = NOW() WHERE level < 80 AND lastup < (NOW() - INTERVAL %u HOUR) AND HOUR(online) BETWEEN HOUR(NOW()) AND (HOUR(NOW()) + %u)", sWorld->getIntConfig(CONFIG_FAKE_WHO_LEVELUP_INTERVAL), sWorld->getIntConfig(CONFIG_FAKE_WHO_ONLINE_INTERVAL));
+				CharacterDatabase.PExecute("update characters_fake set zone = (select zone from fake_zones where level=30 order by rand() limit 1) where level<40");
+				CharacterDatabase.PExecute("update characters_fake set zone = (select zone from fake_zones where level=40 order by rand() limit 1) where level>=40 and level<50");
+				CharacterDatabase.PExecute("update characters_fake set zone = (select zone from fake_zones where level=50 order by rand() limit 1) where level>=50 and level<60");
+				CharacterDatabase.PExecute("update characters_fake set zone = (select zone from fake_zones where level=60 order by rand() limit 1) where level>=60 and level<70");
+				CharacterDatabase.PExecute("update characters_fake set zone = (select zone from fake_zones where level=70 order by rand() limit 1) where level>=70");
+
+            }
         }
         else
             m_nextSave -= p_time;
