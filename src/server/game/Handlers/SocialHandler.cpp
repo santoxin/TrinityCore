@@ -21,6 +21,7 @@
 #include "QueryCallback.h"
 #include "SocialMgr.h"
 #include "ObjectMgr.h"
+#include "language.h"
 
 void WorldSession::HandleContactListOpcode(WorldPacket& recvData)
 {
@@ -89,9 +90,9 @@ void WorldSession::HandleAddFriendOpcode(WorldPacket& recvData)
 				uint32 team = Player::TeamForRace(fields[0].GetUInt8());
 
 				if (GetPlayer()->GetTeam() != team && !HasPermission(rbac::RBAC_PERM_TWO_SIDE_ADD_FRIEND))
-					sSocialMgr->SendFriendStatus(GetPlayer(), FRIEND_ENEMY, false, false);
+					sSocialMgr->SendFriendStatus(GetPlayer(), FRIEND_ENEMY, friendGuid);
 				else
-					ChatHandler(GetPlayer()->GetSession()).PSendSysMessage(LANG_FAKE_NOT_DISTURB);
+					SendNotification(GetTrinityString(LANG_FAKE_NOT_DISTURB));
 
 				return;
 			}
@@ -151,7 +152,7 @@ void WorldSession::HandleAddIgnoreOpcode(WorldPacket& recvData)
 
 			if (fakeresult)
 			{
-				ChatHandler(_player->GetSession()).PSendSysMessage(LANG_FAKE_NOT_DISTURB);
+				SendNotification(GetTrinityString(LANG_FAKE_NOT_DISTURB));
 				return;
 			}
 		}

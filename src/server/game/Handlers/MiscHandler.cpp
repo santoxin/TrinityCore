@@ -365,7 +365,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
         ++displayCount;
     }
 
-    if (sWorld->getBoolConfig(CONFIG_FAKE_WHO_LIST) && displaycount < max_who)
+    if (sWorld->getBoolConfig(CONFIG_FAKE_WHO_LIST) && displayCount < max_who)
     {
         //const char fake_players_db = (searchBool ? FAKE_CHAR_ONLINE_SEARCH : FAKE_CHAR_ONLINE);
         PreparedStatement* fake = CharacterDatabase.GetPreparedStatement(searchBool ? FAKE_CHAR_ONLINE_SEARCH : FAKE_CHAR_ONLINE);
@@ -397,13 +397,13 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
                 data << uint8(gender);                      // player gender
                 data << uint32(pzoneid);                    // player zone id
 
-                if ((++matchcount) == max_who)
+                if ((++matchCount) == max_who)
                     break;
             } while (fakeresult->NextRow());
         }
     }
 
-    data.put(0, matchcount);
+    data.put(0, matchCount);
     data.put(4, matchCount);                              // insert right count, count of matches
 
     SendPacket(&data);
