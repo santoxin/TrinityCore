@@ -21,7 +21,7 @@
 #include "SharedDefines.h"
 #include "QueryResult.h"
 #include "Transaction.h"
-#include "GameTime.h"
+#include "../Time/GameTime.h"
 #include <deque>
 
 class Item;
