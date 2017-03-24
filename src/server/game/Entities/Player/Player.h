@@ -60,6 +60,10 @@ class PlayerAI;
 
 struct CharacterCustomizeInfo;
 
+// Playerbot mod
+class PlayerbotAI;
+class PlayerbotMgr;
+
 typedef std::deque<Mail*> PlayerMails;
 
 #define PLAYER_MAX_SKILLS           127
@@ -2303,6 +2307,18 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         bool CanFly() const override { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY); }
 
+        // Playerbot mod:
+        // A Player can either have a playerbotMgr (to manage its bots), or have playerbotAI (if it is a bot), or
+        // neither. Code that enables bots must create the playerbotMgr and set it using SetPlayerbotMgr.
+        EquipmentSets& GetEquipmentSets() { return m_EquipmentSets; }
+        void SetPlayerbotAI(PlayerbotAI* ai) { m_playerbotAI=ai; }
+        PlayerbotAI* GetPlayerbotAI() { return m_playerbotAI; }
+        void SetPlayerbotMgr(PlayerbotMgr* mgr) { m_playerbotMgr=mgr; }
+        PlayerbotMgr* GetPlayerbotMgr() { return m_playerbotMgr; }
+        void SetBotDeathTimer() { m_deathTimer = 0; }
+        PlayerTalentMap& GetTalentMap(uint8 spec) { return *m_talents[spec]; }
+        bool MinimalLoadFromDB( QueryResult result, uint32 guid );
+
         //! Return collision height sent to client
         float GetCollisionHeight(bool mounted) const;
 
@@ -2643,6 +2659,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         // variables to save health and mana before duel and restore them after duel
         uint32 healthBeforeDuel;
         uint32 manaBeforeDuel;
+
+        // Playerbot mod:
+        PlayerbotAI* m_playerbotAI;
+        PlayerbotMgr* m_playerbotMgr;
 
         WorldLocation _corpseLocation;
         // Prepatch by LordPsyan
