@@ -45,6 +45,7 @@
 #include "Util.h"
 #include "Vehicle.h"
 #include "World.h"
+#include "CharacterCache.h"
 
 #include "Packets/QueryPackets.h"
 
@@ -77,7 +78,6 @@ ScriptMapMap* GetScriptsMapByType(ScriptsType type)
     }
     return res;
 }
-
 std::string GetScriptCommandName(ScriptCommands command)
 {
     std::string res = "";
@@ -291,6 +291,52 @@ void ObjectMgr::AddLocaleString(std::string const& s, LocaleConstant locale, Str
 
         data[locale] = s;
     }
+}
+
+Player* ObjectMgr::GetPlayerByLowGUID(ObjectGuid::LowType lowguid) const
+{
+	ObjectGuid guid(HighGuid::Player, lowguid);
+	return ObjectAccessor::FindPlayer(guid);
+}
+
+uint32 ObjectMgr::GetPlayerAccountIdByGUID(ObjectGuid guid) const
+{
+	if (CharacterCacheEntry const* characterInfo = sCharacterCache->GetCharacterCacheByGuid(guid))
+		return characterInfo->AccountId;
+
+	return 0;
+}
+ObjectGuid ObjectMgr::GetPlayerGUIDByName(std::string const& name) const
+{
+	Player* player = ObjectAccessor::FindPlayerByName(name);
+	if (player)
+		return player->GetGUID();
+
+	return ObjectGuid::Empty;
+}
+
+bool ObjectMgr::GetPlayerNameByGUID(ObjectGuid guid, std::string& name) const
+{
+	// prevent DB access for online player
+	if (Player* player = ObjectAccessor::FindConnectedPlayer(guid))
+	{
+		name = player->GetName();
+		return true;
+	}
+
+	PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_NAME_DATA);
+
+	stmt->setUInt32(0, guid.GetCounter());
+
+	PreparedQueryResult result = CharacterDatabase.Query(stmt);
+
+	if (result)
+	{
+		name = (*result)[4].GetString();
+		return true;
+	}
+
+	return false;
 }
 
 void ObjectMgr::LoadCreatureLocales()

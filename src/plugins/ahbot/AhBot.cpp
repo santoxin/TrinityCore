@@ -656,7 +656,7 @@ void AhBot::Expire(int auction)
     {
         if (IsBotAuction(itr->second->owner))
         {
-            itr->second->expire_time = sWorld->GetGameTime();
+            itr->second->expire_time = GameTime::GetGameTime();
             count++;
         }
 

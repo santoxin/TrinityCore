@@ -761,7 +761,10 @@ class TC_GAME_API ObjectMgr
         CreatureAddon const* GetCreatureTemplateAddon(uint32 entry) const;
         ItemTemplate const* GetItemTemplate(uint32 entry) const;
         ItemTemplateContainer const* GetItemTemplateStore() const { return &_itemTemplateStore; }
-
+		Player* GetPlayerByLowGUID(ObjectGuid::LowType lowguid) const;
+		uint32 GetPlayerAccountIdByGUID(ObjectGuid guid) const;
+		ObjectGuid GetPlayerGUIDByName(std::string const& name) const;
+		bool GetPlayerNameByGUID(ObjectGuid guid, std::string& name) const;
         ItemSetNameEntry const* GetItemSetNameEntry(uint32 itemId) const
         {
             ItemSetNameContainer::const_iterator itr = _itemSetNameStore.find(itemId);

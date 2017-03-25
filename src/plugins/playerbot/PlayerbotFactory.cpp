@@ -1206,12 +1206,11 @@ ObjectGuid PlayerbotFactory::GetRandomBot()
 void AddPrevQuests(uint32 questId, list<uint32>& questIds)
 {
     Quest const *quest = sObjectMgr->GetQuestTemplate(questId);
-    for (Quest::PrevQuests::const_iterator iter = quest->prevQuests.begin(); iter != quest->prevQuests.end(); ++iter)
-    {
-        uint32 prevId = abs(*iter);
-        AddPrevQuests(prevId, questIds);
-        questIds.push_back(prevId);
-    }
+	for (uint32 prevId : quest->PrevChainQuests)
+	{
+		AddPrevQuests(prevId, questIds);
+		questIds.push_back(prevId);
+	}
 }
 
 void PlayerbotFactory::InitQuests()
@@ -1732,6 +1731,11 @@ void PlayerbotFactory::InitGuild()
         return;
     }
 
-    if (guild->GetMemberCount() < 10)
-        guild->AddMember(bot->GetGUID(), urand(GR_OFFICER, GR_INITIATE));
+	if (guild->GetMemberCount() < 10)
+	{
+		SQLTransaction trans = CharacterDatabase.BeginTransaction();
+		guild->AddMember(trans, bot->GetGUID(), urand(GR_OFFICER, GR_INITIATE));
+		CharacterDatabase.CommitTransaction(trans);
+	}
+        
 }
