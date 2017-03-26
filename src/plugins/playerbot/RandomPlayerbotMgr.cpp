@@ -237,7 +237,8 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, vector<WorldLocation> &locs
                 bot->GetName().c_str(), area->area_name[0], x, y, z, locs.size());
 
         bot->GetMotionMaster()->Clear();
-        bot->TeleportTo(loc.GetMapId(), x, y, z, 0);
+        //bot->TeleportTo(loc.GetMapId(), x, y, z, 0);
+		bot->TeleportTo(571, 5804.149902f, 624.770996f, 647.767029f, 1.640000f);
         return;
     }
 
