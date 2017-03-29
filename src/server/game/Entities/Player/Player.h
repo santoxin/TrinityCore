@@ -64,6 +64,11 @@ struct CharacterCustomizeInfo;
 class PlayerbotAI;
 class PlayerbotMgr;
 
+// NpcBot mod
+class BotMgr;
+// end NpcBot mod
+
+
 typedef std::deque<Mail*> PlayerMails;
 
 #define PLAYER_MAX_SKILLS           127
@@ -2425,6 +2430,21 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void _SaveInstanceTimeRestrictions(SQLTransaction& trans);
 
         /*********************************************************/
+        /***                     BOT SYSTEM                    ***/
+        /*********************************************************/
+        void SetBotMgr(BotMgr* mgr) { ASSERT(!_botMgr); _botMgr = mgr; }
+        BotMgr* GetBotMgr() const { return _botMgr; }
+        bool HaveBot() const;
+        uint8 GetNpcBotsCount(bool inWorldOnly = false) const;
+        uint8 GetBotFollowDist() const;
+        void SetBotFollowDist(int8 dist);
+        void SetBotsShouldUpdateStats();
+        void RemoveAllBots(uint8 removetype = 0);
+        /*********************************************************/
+        /***                 END BOT SYSTEM                    ***/
+        /*********************************************************/
+
+        /*********************************************************/
         /***              ENVIRONMENTAL SYSTEM                 ***/
         /*********************************************************/
         void HandleSobering();
@@ -2586,6 +2606,14 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool m_needsZoneUpdate;
 
     private:
+        /*********************************************************/
+        /***                     BOT SYSTEM                    ***/
+        /*********************************************************/
+        BotMgr* _botMgr;
+        /*********************************************************/
+        /***                END BOT SYSTEM                     ***/
+        /*********************************************************/
+	
         // internal common parts for CanStore/StoreItem functions
         InventoryResult CanStoreItem_InSpecificSlot(uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemTemplate const* pProto, uint32& count, bool swap, Item* pSrcItem) const;
         InventoryResult CanStoreItem_InBag(uint8 bag, ItemPosCountVec& dest, ItemTemplate const* pProto, uint32& count, bool merge, bool non_specialized, Item* pSrcItem, uint8 skip_bag, uint8 skip_slot) const;
