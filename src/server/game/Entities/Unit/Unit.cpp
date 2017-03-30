@@ -8959,6 +8959,12 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
     if (PvP)
         m_CombatTimer = 5000;
 
+    ////npcbot - if combat with npcbot or its pet set extended timer
+    //if (PvP &&((GetTypeId() == TYPEID_UNIT && ToCreature()->IsFreeBot()) ||
+    //    (enemy->GetTypeId() == TYPEID_UNIT && enemy->ToCreature()->IsFreeBot())))
+    //    m_CombatTimer += 5000;
+    ////end npcbot
+
     if (IsInCombat() || HasUnitState(UNIT_STATE_EVADE))
         return;
 
@@ -9391,6 +9397,12 @@ bool Unit::IsAlwaysVisibleFor(WorldObject const* seer) const
             if (Player* ownerPlayer = owner->ToPlayer())
                 if (ownerPlayer->IsGroupVisibleFor(seerPlayer))
                     return true;
+				
+    //npcbot - bots are always visible for owner
+    if (Creature const* bot = ToCreature())
+        if (bot->GetBotAI() && seer->GetGUID() == bot->GetBotOwner()->GetGUID())
+            return true;
+    //end npcbot
 
     return false;
 }
@@ -9739,6 +9751,11 @@ bool Unit::CanHaveThreatList(bool skipAliveCheck) const
     // summons can not have a threat list, unless they are controlled by a creature
     if (HasUnitTypeMask(UNIT_MASK_MINION | UNIT_MASK_GUARDIAN | UNIT_MASK_CONTROLABLE_GUARDIAN) && ((Pet*)this)->GetOwnerGUID().IsPlayer())
         return false;
+
+    //npcbot - npcbots and their pets cannot have threatlist
+    if (ToCreature()->GetBotAI())
+        return false;
+    //end npcbot
 
     return true;
 }
@@ -10126,6 +10143,11 @@ void Unit::ModSpellCastTime(SpellInfo const* spellInfo, int32 & castTime, Spell*
     // called from caster
     if (Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod<SPELLMOD_CASTING_TIME>(spellInfo->Id, castTime, spell);
+
+    //npcbot - apply bot spell cast time mods
+    if (castTime > 0 && GetTypeId() == TYPEID_UNIT && ToCreature()->GetBotAI())
+        ToCreature()->ApplyCreatureSpellCastTimeMods(spellInfo, castTime);
+    //end npcbot
 
     if (!(spellInfo->HasAttribute(SPELL_ATTR0_ABILITY) || spellInfo->HasAttribute(SPELL_ATTR0_TRADESPELL) || spellInfo->HasAttribute(SPELL_ATTR3_NO_DONE_BONUS)) &&
         ((GetTypeId() == TYPEID_PLAYER && spellInfo->SpellFamilyName) || GetTypeId() == TYPEID_UNIT))
@@ -11441,6 +11463,12 @@ void Unit::ProcSkillsAndReactives(bool isVictim, Unit* procTarget, uint32 typeMa
                     ToPlayer()->AddComboPoints(procTarget, 1);
                     StartReactiveTimer(REACTIVE_OVERPOWER);
                 }
+                //npcbot - update reactives for bots
+                if ((procExtra & (PROC_EX_DODGE | PROC_EX_PARRY)) && GetTypeId() == TYPEID_UNIT && ToCreature()->GetBotAI() && ToCreature()->GetBotClass() == CLASS_WARRIOR)
+                {
+                    StartReactiveTimer(REACTIVE_OVERPOWER);
+                }
+                //end npcbot
             }
         }
     }
@@ -11750,6 +11778,29 @@ void Unit::ClearComboPointHolders()
     }
 }
 
+//npcbot
+void Unit::ClearReactive(ReactiveType reactive)
+{
+    m_reactiveTimer[reactive] = 0;
+
+    switch (reactive)
+    {
+        case REACTIVE_DEFENSE:
+            if (HasAuraState(AURA_STATE_DEFENSE))
+                ModifyAuraState(AURA_STATE_DEFENSE, false);
+            break;
+        case REACTIVE_HUNTER_PARRY:
+            if (getClass() == CLASS_HUNTER && HasAuraState(AURA_STATE_HUNTER_PARRY))
+                ModifyAuraState(AURA_STATE_HUNTER_PARRY, false);
+            break;
+        case REACTIVE_OVERPOWER:
+            if (getClass() == CLASS_WARRIOR && GetTypeId() == TYPEID_PLAYER)
+                ToPlayer()->ClearComboPoints();
+            break;
+    }
+}
+//end npcbot
+
 void Unit::ClearAllReactives()
 {
     for (uint8 i = 0; i < MAX_REACTIVE; ++i)
@@ -11871,6 +11922,9 @@ uint32 Unit::GetCastingTimeForBonus(SpellInfo const* spellProto, DamageEffectTyp
 {
     // Not apply this to creature cast spells with casttime == 0
     if (CastingTime == 0 && GetTypeId() == TYPEID_UNIT && !IsPet())
+		//npcbot - skip bots
+        if (!ToCreature()->GetBotAI())
+        //endnpcbot
         return 3500;
 
     if (CastingTime > 7000) CastingTime = 7000;
@@ -12339,7 +12393,10 @@ void Unit::Kill(Unit* victim, bool durabilityLoss)
 
         // only if not player and not controlled by player pet. And not at BG
         if ((durabilityLoss && !player && !victim->ToPlayer()->InBattleground()) || (player && sWorld->getBoolConfig(CONFIG_DURABILITY_LOSS_IN_PVP)))
-        {
+			//npcbot - bots should not cause durability loss unless rampaging around
+			if (player || !ToCreature()->GetBotAI() || ToCreature()->GetBotOwner()->GetGUID().GetCounter() == GetGUID().GetCounter())
+			//end npcbot
+ 		{
             TC_LOG_DEBUG("entities.unit", "We are dead, losing %f percent durability", sWorld->getRate(RATE_DURABILITY_LOSS_ON_DEATH));
             plrVictim->DurabilityLossAll(sWorld->getRate(RATE_DURABILITY_LOSS_ON_DEATH), false);
             // durability lost message
@@ -13297,6 +13354,21 @@ float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, i
 {
     //calculate miss chance
     float missChance = victim->GetUnitMissChance(attType);
+ 
+    //npcbot - custom miss chance instead of bunch of auras, extra miss chance against bots
+    //bot can have extra miss chance for attackers
+    //but if attacker is also a bot and cannot miss then return this extra miss chance
+    float evasion = 0.0f;
+
+    if (victim->GetTypeId() == TYPEID_UNIT && victim->ToCreature()->GetBotAI())
+        evasion = victim->ToCreature()->GetCreatureEvasion();
+    if (GetTypeId() == TYPEID_UNIT && !ToCreature()->CanMiss())
+        return evasion;
+    if (GetTypeId() == TYPEID_UNIT && ToCreature()->GetBotAI())
+        missChance += ToCreature()->GetCreatureMissChance();
+
+    missChance += evasion;
+    //end npcbot
 
     if (!spellId && haveOffhandWeapon())
         missChance += 19;
@@ -13325,6 +13397,11 @@ float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, i
         missChance -= m_modRangedHitChance;
     else
         missChance -= m_modMeleeHitChance;
+ 
+    //npcbot - limit chance from 30% to 60% if evasion is here
+    if (evasion > 0.0f && missChance < evasion)
+        missChance = evasion;
+    //end npcbot
 
     // Limit miss chance from 0 to 60%
     if (missChance < 0.0f)
@@ -13650,6 +13727,182 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form, uint32 spellId) const
                 return 21244;
             default:
                 break;
+        }
+    }
+    else if (ToCreature() && ToCreature()->GetBotOwner() && ToCreature()->GetBotOwner()->ToPlayer())
+    {
+        Player const* player = ToCreature()->GetBotOwner();
+        //let's make druids alike for each player
+        switch (form)
+        {
+        case FORM_CAT:
+            // Based on master's Hair color
+            if (player->getRace() == RACE_NIGHTELF)
+            {
+                uint8 hairColor = player->GetByteValue(PLAYER_BYTES, 3);
+                switch (hairColor)
+                {
+                case 7: // Violet
+                case 8:
+                    return 29405;
+                case 3: // Light Blue
+                    return 29406;
+                case 0: // Green
+                case 1: // Light Green
+                case 2: // Dark Green
+                    return 29407;
+                case 4: // White
+                    return 29408;
+                default: // original - Dark Blue
+                    return 892;
+                }
+            }
+            // Based on master's Skin color
+            else if (player->getRace() == RACE_TAUREN)
+            {
+                uint8 skinColor = player->GetByteValue(PLAYER_BYTES, 0);
+                // Male master
+                if (player->getGender() == GENDER_MALE)
+                {
+                    switch (skinColor)
+                    {
+                    case 12: // White
+                    case 13:
+                    case 14:
+                    case 18: // Completly White
+                        return 29409;
+                    case 9: // Light Brown
+                    case 10:
+                    case 11:
+                        return 29410;
+                    case 6: // Brown
+                    case 7:
+                    case 8:
+                        return 29411;
+                    case 0: // Dark
+                    case 1:
+                    case 2:
+                    case 3: // Dark Grey
+                    case 4:
+                    case 5:
+                        return 29412;
+                    default: // original - Grey
+                        return 8571;
+                    }
+                }
+                // Female master
+                else switch (skinColor)
+                {
+                case 10: // White
+                    return 29409;
+                case 6: // Light Brown
+                case 7:
+                    return 29410;
+                case 4: // Brown
+                case 5:
+                    return 29411;
+                case 0: // Dark
+                case 1:
+                case 2:
+                case 3:
+                    return 29412;
+                default: // original - Grey
+                    return 8571;
+                }
+            }
+            else if (Player::TeamForRace(player->getRace()) == ALLIANCE)
+                return 892;
+            else
+                return 8571;
+        case FORM_DIREBEAR:
+        case FORM_BEAR:
+            // Based on Hair color
+            if (player->getRace() == RACE_NIGHTELF)
+            {
+                uint8 hairColor = player->GetByteValue(PLAYER_BYTES, 3);
+                switch (hairColor)
+                {
+                case 0: // Green
+                case 1: // Light Green
+                case 2: // Dark Green
+                    return 29413; // 29415?
+                case 6: // Dark Blue
+                    return 29414;
+                case 4: // White
+                    return 29416;
+                case 3: // Light Blue
+                    return 29417;
+                default: // original - Violet
+                    return 2281;
+                }
+            }
+            // Based on Skin color
+            else if (player->getRace() == RACE_TAUREN)
+            {
+                uint8 skinColor = player->GetByteValue(PLAYER_BYTES, 0);
+                // Male
+                if (player->getGender() == GENDER_MALE)
+                {
+                    switch (skinColor)
+                    {
+                    case 0: // Dark (Black)
+                    case 1:
+                    case 2:
+                        return 29418;
+                    case 3: // White
+                    case 4:
+                    case 5:
+                    case 12:
+                    case 13:
+                    case 14:
+                        return 29419;
+                    case 9: // Light Brown/Grey
+                    case 10:
+                    case 11:
+                    case 15:
+                    case 16:
+                    case 17:
+                        return 29420;
+                    case 18: // Completly White
+                        return 29421;
+                    default: // original - Brown
+                        return 2289;
+                    }
+                }
+                // Female
+                else switch (skinColor)
+                {
+                case 0: // Dark (Black)
+                case 1:
+                    return 29418;
+                case 2: // White
+                case 3:
+                    return 29419;
+                case 6: // Light Brown/Grey
+                case 7:
+                case 8:
+                case 9:
+                    return 29420;
+                case 10: // Completly White
+                    return 29421;
+                default: // original - Brown
+                    return 2289;
+                }
+            }
+            else if (Player::TeamForRace(player->getRace()) == ALLIANCE)
+                return 2281;
+            else
+                return 2289;
+        case FORM_FLIGHT:
+            if (Player::TeamForRace(player->getRace()) == ALLIANCE)
+                return 20857;
+            return 20872;
+        case FORM_FLIGHT_EPIC:
+            if (Player::TeamForRace(player->getRace()) == ALLIANCE)
+                return 21243;
+            return 21244;
+        default:
+            break;
         }
     }
 

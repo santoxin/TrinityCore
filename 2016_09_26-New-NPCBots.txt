@@ -350,9 +350,6 @@ index 4581037..9b5aa81 100644
      //    ToCreature()->SetCombatStartPosition(GetPositionX(), GetPositionY(), GetPositionZ());
  
      if (GetTypeId() == TYPEID_UNIT && !IsPet())
-+    //npcbot - not for npcbots either
-+    if (!ToCreature()->GetBotAI())
-+    //end npcbot
      {
          // should not let player enter combat by right clicking target - doesn't helps
          AddThreat(victim, 0.0f);
@@ -460,12 +457,8 @@ index 4581037..9b5aa81 100644
      if (PvP)
          m_CombatTimer = 5000;
  
-+    ////npcbot - if combat with npcbot or its pet set extended timer
-+    //if (PvP &&((GetTypeId() == TYPEID_UNIT && ToCreature()->IsFreeBot()) ||
-+    //    (enemy->GetTypeId() == TYPEID_UNIT && enemy->ToCreature()->IsFreeBot())))
-+    //    m_CombatTimer += 5000;
-+    ////end npcbot
-+
+
+
      if (IsInCombat() || HasUnitState(UNIT_STATE_EVADE))
          return;
  
@@ -473,12 +466,7 @@ index 4581037..9b5aa81 100644
                  if (ownerPlayer->IsGroupVisibleFor(seerPlayer))
                      return true;
  
-+    //npcbot - bots are always visible for owner
-+    if (Creature const* bot = ToCreature())
-+        if (bot->GetBotAI() && seer->GetGUID() == bot->GetBotOwner()->GetGUID())
-+            return true;
-+    //end npcbot
-+
+
      return false;
  }
  
@@ -486,11 +474,7 @@ index 4581037..9b5aa81 100644
      if (HasUnitTypeMask(UNIT_MASK_MINION | UNIT_MASK_GUARDIAN | UNIT_MASK_CONTROLABLE_GUARDIAN) && ((Pet*)this)->GetOwnerGUID().IsPlayer())
          return false;
  
-+    //npcbot - npcbots and their pets cannot have threatlist
-+    if (ToCreature()->GetBotAI())
-+        return false;
-+    //end npcbot
-+
+
      return true;
  }
  
@@ -498,10 +482,7 @@ index 4581037..9b5aa81 100644
      // called from caster
      if (Player* modOwner = GetSpellModOwner())
          modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, castTime, spell);
-+    //npcbot - apply bot spell cast time mods
-+    if (castTime > 0 && GetTypeId() == TYPEID_UNIT && ToCreature()->GetBotAI())
-+        ToCreature()->ApplyCreatureSpellCastTimeMods(spellInfo, castTime);
-+    //end npcbot
+
  
      if (!(spellInfo->HasAttribute(SPELL_ATTR0_ABILITY) || spellInfo->HasAttribute(SPELL_ATTR0_TRADESPELL) || spellInfo->HasAttribute(SPELL_ATTR3_NO_DONE_BONUS)) &&
          ((GetTypeId() == TYPEID_PLAYER && spellInfo->SpellFamilyName) || GetTypeId() == TYPEID_UNIT))
@@ -509,13 +490,7 @@ index 4581037..9b5aa81 100644
                      ToPlayer()->AddComboPoints(target, 1);
                      StartReactiveTimer(REACTIVE_OVERPOWER);
                  }
-+
-+                //npcbot - update reactives for bots
-+                if ((procExtra & (PROC_EX_DODGE | PROC_EX_PARRY)) && GetTypeId() == TYPEID_UNIT && ToCreature()->GetBotAI() && ToCreature()->GetBotClass() == CLASS_WARRIOR)
-+                {
-+                    StartReactiveTimer(REACTIVE_OVERPOWER);
-+                }
-+                //end npcbot
+
              }
          }
      }
@@ -523,29 +498,7 @@ index 4581037..9b5aa81 100644
      }
  }
  
-+//npcbot
-+void Unit::ClearReactive(ReactiveType reactive)
-+{
-+    m_reactiveTimer[reactive] = 0;
-+
-+    switch (reactive)
-+    {
-+        case REACTIVE_DEFENSE:
-+            if (HasAuraState(AURA_STATE_DEFENSE))
-+                ModifyAuraState(AURA_STATE_DEFENSE, false);
-+            break;
-+        case REACTIVE_HUNTER_PARRY:
-+            if (getClass() == CLASS_HUNTER && HasAuraState(AURA_STATE_HUNTER_PARRY))
-+                ModifyAuraState(AURA_STATE_HUNTER_PARRY, false);
-+            break;
-+        case REACTIVE_OVERPOWER:
-+            if (getClass() == CLASS_WARRIOR && GetTypeId() == TYPEID_PLAYER)
-+                ToPlayer()->ClearComboPoints();
-+            break;
-+    }
-+}
-+//end npcbot
-+
+
  void Unit::ClearAllReactives()
  {
      for (uint8 i = 0; i < MAX_REACTIVE; ++i)
@@ -553,9 +506,7 @@ index 4581037..9b5aa81 100644
  {
      // Not apply this to creature cast spells with casttime == 0
      if (CastingTime == 0 && GetTypeId() == TYPEID_UNIT && !IsPet())
-+        //npcbot - skip bots
-+        if (!ToCreature()->GetBotAI())
-+        //endnpcbot
+
          return 3500;
  
      if (CastingTime > 7000) CastingTime = 7000;
@@ -563,43 +514,20 @@ index 4581037..9b5aa81 100644
  
          // only if not player and not controlled by player pet. And not at BG
          if ((durabilityLoss && !player && !victim->ToPlayer()->InBattleground()) || (player && sWorld->getBoolConfig(CONFIG_DURABILITY_LOSS_IN_PVP)))
-+        //npcbot - bots should not cause durability loss unless rampaging around
-+        if (player || !ToCreature()->GetBotAI() || ToCreature()->GetBotOwner()->GetGUID().GetCounter() == GetGUID().GetCounter())
-+        //end npcbot
-         {
+        {
              TC_LOG_DEBUG("entities.unit", "We are dead, losing %f percent durability", sWorld->getRate(RATE_DURABILITY_LOSS_ON_DEATH));
              plrVictim->DurabilityLossAll(sWorld->getRate(RATE_DURABILITY_LOSS_ON_DEATH), false);
 @@ -16104,6 +16468,21 @@ float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, i
      //calculate miss chance
      float missChance = victim->GetUnitMissChance(attType);
- 
-+    //npcbot - custom miss chance instead of bunch of auras, extra miss chance against bots
-+    //bot can have extra miss chance for attackers
-+    //but if attacker is also a bot and cannot miss then return this extra miss chance
-+    float evasion = 0.0f;
-+
-+    if (victim->GetTypeId() == TYPEID_UNIT && victim->ToCreature()->GetBotAI())
-+        evasion = victim->ToCreature()->GetCreatureEvasion();
-+    if (GetTypeId() == TYPEID_UNIT && !ToCreature()->CanMiss())
-+        return evasion;
-+    if (GetTypeId() == TYPEID_UNIT && ToCreature()->GetBotAI())
-+        missChance += ToCreature()->GetCreatureMissChance();
-+
-+    missChance += evasion;
-+    //end npcbot
-+
+
      if (!spellId && haveOffhandWeapon())
          missChance += 19;
  
 @@ -16132,6 +16511,11 @@ float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, i
      else
          missChance -= m_modMeleeHitChance;
- 
-+    //npcbot - limit chance from 30% to 60% if evasion is here
-+    if (evasion > 0.0f && missChance < evasion)
-+        missChance = evasion;
-+    //end npcbot
-+
+
      // Limit miss chance from 0 to 60%
      if (missChance < 0.0f)
          return 0.0f;
@@ -607,183 +535,7 @@ index 4581037..9b5aa81 100644
          }
      }
  
-+    else if (ToCreature() && ToCreature()->GetBotOwner() && ToCreature()->GetBotOwner()->ToPlayer())
-+    {
-+        Player const* player = ToCreature()->GetBotOwner();
-+        //let's make druids alike for each player
-+        switch (form)
-+        {
-+        case FORM_CAT:
-+            // Based on master's Hair color
-+            if (player->getRace() == RACE_NIGHTELF)
-+            {
-+                uint8 hairColor = player->GetByteValue(PLAYER_BYTES, 3);
-+                switch (hairColor)
-+                {
-+                case 7: // Violet
-+                case 8:
-+                    return 29405;
-+                case 3: // Light Blue
-+                    return 29406;
-+                case 0: // Green
-+                case 1: // Light Green
-+                case 2: // Dark Green
-+                    return 29407;
-+                case 4: // White
-+                    return 29408;
-+                default: // original - Dark Blue
-+                    return 892;
-+                }
-+            }
-+            // Based on master's Skin color
-+            else if (player->getRace() == RACE_TAUREN)
-+            {
-+                uint8 skinColor = player->GetByteValue(PLAYER_BYTES, 0);
-+                // Male master
-+                if (player->getGender() == GENDER_MALE)
-+                {
-+                    switch (skinColor)
-+                    {
-+                    case 12: // White
-+                    case 13:
-+                    case 14:
-+                    case 18: // Completly White
-+                        return 29409;
-+                    case 9: // Light Brown
-+                    case 10:
-+                    case 11:
-+                        return 29410;
-+                    case 6: // Brown
-+                    case 7:
-+                    case 8:
-+                        return 29411;
-+                    case 0: // Dark
-+                    case 1:
-+                    case 2:
-+                    case 3: // Dark Grey
-+                    case 4:
-+                    case 5:
-+                        return 29412;
-+                    default: // original - Grey
-+                        return 8571;
-+                    }
-+                }
-+                // Female master
-+                else switch (skinColor)
-+                {
-+                case 10: // White
-+                    return 29409;
-+                case 6: // Light Brown
-+                case 7:
-+                    return 29410;
-+                case 4: // Brown
-+                case 5:
-+                    return 29411;
-+                case 0: // Dark
-+                case 1:
-+                case 2:
-+                case 3:
-+                    return 29412;
-+                default: // original - Grey
-+                    return 8571;
-+                }
-+            }
-+            else if (Player::TeamForRace(player->getRace()) == ALLIANCE)
-+                return 892;
-+            else
-+                return 8571;
-+        case FORM_DIREBEAR:
-+        case FORM_BEAR:
-+            // Based on Hair color
-+            if (player->getRace() == RACE_NIGHTELF)
-+            {
-+                uint8 hairColor = player->GetByteValue(PLAYER_BYTES, 3);
-+                switch (hairColor)
-+                {
-+                case 0: // Green
-+                case 1: // Light Green
-+                case 2: // Dark Green
-+                    return 29413; // 29415?
-+                case 6: // Dark Blue
-+                    return 29414;
-+                case 4: // White
-+                    return 29416;
-+                case 3: // Light Blue
-+                    return 29417;
-+                default: // original - Violet
-+                    return 2281;
-+                }
-+            }
-+            // Based on Skin color
-+            else if (player->getRace() == RACE_TAUREN)
-+            {
-+                uint8 skinColor = player->GetByteValue(PLAYER_BYTES, 0);
-+                // Male
-+                if (player->getGender() == GENDER_MALE)
-+                {
-+                    switch (skinColor)
-+                    {
-+                    case 0: // Dark (Black)
-+                    case 1:
-+                    case 2:
-+                        return 29418;
-+                    case 3: // White
-+                    case 4:
-+                    case 5:
-+                    case 12:
-+                    case 13:
-+                    case 14:
-+                        return 29419;
-+                    case 9: // Light Brown/Grey
-+                    case 10:
-+                    case 11:
-+                    case 15:
-+                    case 16:
-+                    case 17:
-+                        return 29420;
-+                    case 18: // Completly White
-+                        return 29421;
-+                    default: // original - Brown
-+                        return 2289;
-+                    }
-+                }
-+                // Female
-+                else switch (skinColor)
-+                {
-+                case 0: // Dark (Black)
-+                case 1:
-+                    return 29418;
-+                case 2: // White
-+                case 3:
-+                    return 29419;
-+                case 6: // Light Brown/Grey
-+                case 7:
-+                case 8:
-+                case 9:
-+                    return 29420;
-+                case 10: // Completly White
-+                    return 29421;
-+                default: // original - Brown
-+                    return 2289;
-+                }
-+            }
-+            else if (Player::TeamForRace(player->getRace()) == ALLIANCE)
-+                return 2281;
-+            else
-+                return 2289;
-+        case FORM_FLIGHT:
-+            if (Player::TeamForRace(player->getRace()) == ALLIANCE)
-+                return 20857;
-+            return 20872;
-+        case FORM_FLIGHT_EPIC:
-+            if (Player::TeamForRace(player->getRace()) == ALLIANCE)
-+                return 21243;
-+            return 21244;
-+        default:
-+            break;
-+        }
-+    }
-+
+
      uint32 modelid = 0;
      SpellShapeshiftEntry const* formEntry = sSpellShapeshiftStore.LookupEntry(form);
      if (formEntry && formEntry->modelID_A)
@@ -795,18 +547,7 @@ index aa23257..f17138a 100644
          virtual void TextEmote(uint32 textId, WorldObject const* target = nullptr, bool isBossEmote = false);
          virtual void Whisper(uint32 textId, Player* target, bool isBossWhisper = false);
  
-+        //npcbot
-+        bool HasReactive(ReactiveType reactive) const { return m_reactiveTimer[reactive] > 0; }
-+        void ClearReactive(ReactiveType reactive);
-+
-+        void SuspendDelayedSwing();
-+        void ExecuteDelayedSwingHit(bool extra = false);
-+        CalcDamageInfo _damageInfo;
-+        ObjectGuid _delayedTargetGuid;
-+        uint32 _swingDelayTimer;
-+        bool _swingLanded;
-+        //end npcbot
-+
+
      protected:
          explicit Unit (bool isWorldObject);
  
@@ -818,82 +559,7 @@ index 781d30f..d59ebac 100644
      return SKILL_RANGE_LEVEL;
  }
  
-+void ObjectMgr::LoadCreatureOutfits()
-+{
-+    uint32 oldMSTime = getMSTime();
-+
-+    _creatureOutfitStore.clear();                           // for reload case (test only)
-+
-+    //                                                 0     1      2      3     4     5       6           7
-+    QueryResult result = WorldDatabase.Query("SELECT entry, race, gender, skin, face, hair, haircolor, facialhair, "
-+        //8       9        10    11     12     13    14     15     16     17     18
-+        "head, shoulders, body, chest, waist, legs, feet, wrists, hands, back, tabard FROM creature_template_outfits");
-+
-+    if (!result)
-+    {
-+        TC_LOG_ERROR("server.loading", ">> Loaded 0 creature outfits. DB table `creature_template_outfits` is empty!");
-+        return;
-+    }
-+
-+    uint32 count = 0;
-+
-+    do
-+    {
-+        Field* fields = result->Fetch();
-+
-+        uint32 i = 0;
-+        uint32 entry     = fields[i++].GetUInt32();
-+
-+        if (!GetCreatureTemplate(entry))
-+        {
-+            TC_LOG_ERROR("server.loading", ">> Creature entry %u in `creature_template_outfits`, but not in `creature_template`!", entry);
-+            continue;
-+        }
-+
-+        CreatureOutfit co; // const, shouldnt be changed after saving
-+        co.race          = fields[i++].GetUInt8();
-+        ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(co.race);
-+        if (!rEntry)
-+        {
-+            TC_LOG_ERROR("server.loading", ">> Creature entry %u in `creature_template_outfits` has incorrect race (%u).", entry, uint32(co.race));
-+            continue;
-+        }
-+        co.gender        = fields[i++].GetUInt8();
-+        // Set correct displayId
-+        switch (co.gender)
-+        {
-+            case GENDER_FEMALE:
-+                _creatureTemplateStore[entry].Modelid1 = rEntry->model_f;
-+                break;
-+            case GENDER_MALE:
-+                _creatureTemplateStore[entry].Modelid1 = rEntry->model_m;
-+                break;
-+            default:
-+                TC_LOG_ERROR("server.loading", ">> Creature entry %u in `creature_template_outfits` has invalid gender %u", entry, uint32(co.gender));
-+                continue;
-+        }
-+        _creatureTemplateStore[entry].Modelid2 = 0;
-+        _creatureTemplateStore[entry].Modelid3 = 0;
-+        _creatureTemplateStore[entry].Modelid4 = 0;
-+        _creatureTemplateStore[entry].unit_flags2 |= UNIT_FLAG2_MIRROR_IMAGE; // Needed so client requests mirror packet
-+
-+        co.skin          = fields[i++].GetUInt8();
-+        co.face          = fields[i++].GetUInt8();
-+        co.hair          = fields[i++].GetUInt8();
-+        co.haircolor     = fields[i++].GetUInt8();
-+        co.facialhair    = fields[i++].GetUInt8();
-+        for (uint32 j = 0; j != MAX_CREATURE_OUTFIT_DISPLAYS; ++j)
-+            co.outfit[j] = fields[i+j].GetUInt32();
-+
-+        _creatureOutfitStore[entry] = co;
-+
-+        ++count;
-+    }
-+    while (result->NextRow());
-+
-+    TC_LOG_INFO("server.loading", ">> Loaded %u creature outfits in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-+}
-+
+
  void ObjectMgr::LoadGameTele()
  {
      uint32 oldMSTime = getMSTime();
@@ -904,22 +570,7 @@ index ea0a4da..47b5180 100644
 @@ -136,6 +136,21 @@ struct GameTele
  
  typedef std::unordered_map<uint32, GameTele > GameTeleContainer;
- 
-+#define MAX_CREATURE_OUTFIT_DISPLAYS 11
-+struct CreatureOutfit
-+{
-+    uint8 race;
-+    uint8 gender;
-+    uint8 face;
-+    uint8 skin;
-+    uint8 hair;
-+    uint8 facialhair;
-+    uint8 haircolor;
-+    uint32 outfit[MAX_CREATURE_OUTFIT_DISPLAYS];
-+};
-+
-+typedef std::unordered_map<uint32, CreatureOutfit > CreatureOutfitContainer;
-+
+
  enum ScriptsType
  {
      SCRIPTS_FIRST = 1,
@@ -927,7 +578,7 @@ index ea0a4da..47b5180 100644
  
          void LoadNPCSpellClickSpells();
  
-+        void LoadCreatureOutfits();
+
          void LoadGameTele();
  
          void LoadGossipMenu();
@@ -935,8 +586,7 @@ index ea0a4da..47b5180 100644
          bool AddGameTele(GameTele& data);
          bool DeleteGameTele(std::string const& name);
  
-+        CreatureOutfitContainer const& GetCreatureOutfitMap() const { return _creatureOutfitStore; }
-+
+
          TrainerSpellData const* GetNpcTrainerSpells(uint32 entry) const
          {
              CacheTrainerSpellContainer::const_iterator  iter = _cacheTrainerSpellStore.find(entry);
@@ -944,8 +594,7 @@ index ea0a4da..47b5180 100644
          PageTextContainer _pageTextStore;
          InstanceTemplateContainer _instanceTemplateStore;
  
-+        CreatureOutfitContainer _creatureOutfitStore;
-+
+
      private:
          void LoadScripts(ScriptsType type);
          void LoadQuestRelationsHelper(QuestRelations& map, QuestRelationsReverse* reverseMap, std::string const& table, bool starter, bool go);
@@ -957,11 +606,7 @@ index ccfd484..56503a6 100644
      if (m_groupType & GROUPTYPE_RAID)
          _initRaidSubGroupsCounter();
  
-+    //npcbot - set loot mode on create
-+    if (leader->HaveBot()) //player + npcbot so set to free-for-all on create
-+        m_lootMethod = FREE_FOR_ALL;
-+    else
-+    //end npcbot
+
      if (!isLFGGroup())
          m_lootMethod = GROUP_LOOT;
  
@@ -969,10 +614,7 @@ index ccfd484..56503a6 100644
  
      SubGroupCounterIncrease(subGroup);
  
-+    //npcbot - check if trying to add bot
-+    if (player->GetGUID().IsPlayer())
-+    {
-+    //end npcbot
+
      player->SetGroupInvite(NULL);
      if (player->GetGroup())
      {
@@ -980,10 +622,7 @@ index ccfd484..56503a6 100644
  
      // if the same group invites the player back, cancel the homebind timer
      player->m_InstanceValid = player->CheckInstanceValidity(false);
--
-+    //npcbot
-+    }
-+    //end npcbot
+
      if (!isRaidGroup())                                      // reset targetIcons for non-raid-groups
      {
          for (uint8 i = 0; i < TARGETICONCOUNT; ++i)
@@ -991,10 +630,7 @@ index ccfd484..56503a6 100644
      SendUpdate();
      sScriptMgr->OnGroupAddMember(this, player->GetGUID());
  
-+    //npcbot - check 2
-+    if (player->GetGUID().IsPlayer())
-+    {
-+    //end npcbot
+
      if (!IsLeader(player->GetGUID()) && !isBGGroup() && !isBFGroup())
      {
          // reset the new member's instances, unless he is currently in one of them
@@ -1002,9 +638,7 @@ index ccfd484..56503a6 100644
  
      if (m_maxEnchantingLevel < player->GetSkillValue(SKILL_ENCHANTING))
          m_maxEnchantingLevel = player->GetSkillValue(SKILL_ENCHANTING);
-+    //npcbot
-+    }
-+    //end npcbot
+
  
      return true;
  }
@@ -1012,9 +646,6 @@ index ccfd484..56503a6 100644
          }
  
          if (m_memberMgr.getSize() < ((isLFGGroup() || isBGGroup()) ? 1u : 2u))
-+        //npcbot
-+        if (GetMembersCount() < ((isLFGGroup() || isBGGroup()) ? 1u : 2u))
-+        //end npcbot
              Disband();
  
          return true;
@@ -1026,9 +657,7 @@ index 18b8119..9f65a9e 100644
          // FG: evil hacks
          void BroadcastGroupUpdate(void);
  
-+        //Bot
-+        ObjectGuid const *GetTargetIcons() const { return m_targetIcons; }
-+
+
      protected:
          bool _setMembersGroup(ObjectGuid guid, uint8 group);
          void _homebindIfInstance(Player* player);
@@ -1040,38 +669,10 @@ index cbc9be3..e7b2d55 100644
      if (!unit)
          return;
  
-+    //bot
-+    if (unit->GetTypeId() == TYPEID_UNIT)
-+    {
-+        CreatureOutfitContainer const& outfits = sObjectMgr->GetCreatureOutfitMap();
-+        CreatureOutfitContainer::const_iterator it = outfits.find(unit->GetEntry());
-+        if (it != outfits.end())
-+        {
-+            WorldPacket data(SMSG_MIRRORIMAGE_DATA, 68);
-+            data << uint64(guid);
-+            data << uint32(unit->GetNativeDisplayId()); // displayId
-+            data << uint8(it->second.race);             // race
-+            data << uint8(it->second.gender);           // gender
-+            data << uint8(unit->getClass());            // class
-+            data << uint8(it->second.skin);             // skin
-+            data << uint8(it->second.face);             // face
-+            data << uint8(it->second.hair);             // hair
-+            data << uint8(it->second.haircolor);        // haircolor
-+            data << uint8(it->second.facialhair);       // facialhair
-+            data << uint32(0);                          // guildId
-+
-+            // item displays
-+            for (uint8 i = 0; i != MAX_CREATURE_OUTFIT_DISPLAYS; ++i)
-+                data << uint32(it->second.outfit[i]);
-+
-+            SendPacket(&data);
-+            return;
-+        }
-+    }
-+
+
      if (!unit->HasAuraType(SPELL_AURA_CLONE_CASTER))
          return;
-+    //end bot
+
  
      // Get creator of the unit (SPELL_AURA_CLONE_CASTER does not stack)
      Unit* creator = unit->GetAuraEffectsByType(SPELL_AURA_CLONE_CASTER).front()->GetCaster();
@@ -1082,11 +683,7 @@ index 177691c..42fccdd 100644
 @@ -37,6 +37,10 @@
  #include "Vehicle.h"
  #include "VMapFactory.h"
- 
-+//npcbot
-+#include "botmgr.h"
-+//end npcbot
-+
+
  u_map_magic MapMagic        = { {'M','A','P','S'} };
  u_map_magic MapVersionMagic = { {'v','1','.','8'} };
  u_map_magic MapAreaMagic    = { {'A','R','E','A'} };
@@ -1094,25 +691,9 @@ index 177691c..42fccdd 100644
  {
      uint32 count = 0;
      for (MapRefManager::const_iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
--        if (!itr->GetSource()->IsGameMaster())
-+        if (!itr->GetSource()->IsGameMaster()) {
-+            //npcbot - count npcbots as group members (event if not in group)
-+            if (itr->GetSource()->HaveBot() && BotMgr::LimitBots(this))
-+            {
-+                ++count;
-+                BotMap const* botmap = itr->GetSource()->GetBotMgr()->GetBotMap();
-+                for (BotMap::const_iterator itr = botmap->begin(); itr != botmap->end(); ++itr)
-+                {
-+                    Creature* cre = itr->second;
-+                    if (!cre || !cre->IsInWorld() || cre->FindMap() != this)
-+                        continue;
-+                    ++count;
-+                }
-+            }
-+            else
-+            //end npcbot
+
              ++count;
-+        }
+
      return count;
  }
  
@@ -1120,10 +701,6 @@ index 177691c..42fccdd 100644
          GridCoord p = Trinity::ComputeGridCoord(x, y);
          if (getNGrid(p.x_coord, p.y_coord))
              getNGrid(p.x_coord, p.y_coord)->incUnloadActiveLock();
-+        //bot
-+        else if (c->GetIAmABot())
-+            EnsureGridLoadedForActiveObject(Cell(Trinity::ComputeCellCoord(c->GetPositionX(), c->GetPositionY())), c);
-+        //end bot
          else
          {
              GridCoord p2 = Trinity::ComputeGridCoord(c->GetPositionX(), c->GetPositionY());
@@ -1131,10 +708,7 @@ index 177691c..42fccdd 100644
          GridCoord p = Trinity::ComputeGridCoord(x, y);
          if (getNGrid(p.x_coord, p.y_coord))
              getNGrid(p.x_coord, p.y_coord)->decUnloadActiveLock();
-+        //bot
-+        else if (c->GetIAmABot())
-+            EnsureGridLoaded(Cell(Trinity::ComputeCellCoord(c->GetPositionX(), c->GetPositionY())));
-+        //end bot
+
          else
          {
              GridCoord p2 = Trinity::ComputeGridCoord(c->GetPositionX(), c->GetPositionY());
@@ -1146,10 +720,7 @@ index 79a8b38..3fe7fc6 100644
  #include "Opcodes.h"
  #include "AchievementMgr.h"
  
-+//npcbot
-+#include "botmgr.h"
-+//end npcbot
-+
+
  MapManager::MapManager()
      : _nextInstanceId(0), _scheduledScripts(0)
  {
@@ -1157,82 +728,7 @@ index 79a8b38..3fe7fc6 100644
      // Start mtmaps if needed.
      if (num_threads > 0)
          m_updater.activate(num_threads);
-+
-+    //npcbot - spawn bots
-+    BotMgr::LoadConfig();
-+
-+    if (!BotMgr::IsNpcBotModEnabled())
-+        return;
-+
-+    uint32 botoldMSTime = getMSTime();
-+
-+    TC_LOG_INFO("server.loading", "Starting NpcBot system...");
-+    PreparedStatement* botstmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_NPCBOTS);
-+    //"SELECT entry FROM characters_npcbot", CONNECTION_SYNCH
-+    PreparedQueryResult res = CharacterDatabase.Query(botstmt);
-+    if (!res)
-+    {
-+        TC_LOG_INFO("server.loading", ">> Spawned 0 npcbots. Table `characters_npcbot` is empty!");
-+        return;
-+    }
-+
-+    PreparedQueryResult infores;
-+    uint32 botcounter = 0;
-+    Field* field;
-+    std::list<uint32> botgrids;
-+    do
-+    {
-+        field = res->Fetch();
-+        uint32 entry = field[0].GetUInt32();
-+        CreatureTemplate const* proto = sObjectMgr->GetCreatureTemplate(entry);
-+        if (!proto)
-+        {
-+            TC_LOG_ERROR("server.loading", "Cannot find creature_template entry for npcbot (id: %u)!", entry);
-+            continue;
-+        }
-+
-+        botstmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_NPCBOT_INFO);
-+        //"SELECT guid, map, position_x, position_y, position_z, orientation FROM creature WHERE id = ?", CONNECTION_SYNCH
-+        botstmt->setUInt32(0, entry);
-+        infores = WorldDatabase.Query(botstmt);
-+        if (!infores)
-+        {
-+            TC_LOG_ERROR("server.loading", "Cannot spawn npcbot %s (id: %u), not found in `creature` table!", proto->Name.c_str(), entry);
-+            continue;
-+        }
-+
-+        field = infores->Fetch();
-+        uint32 tableGuid = field[0].GetUInt32();
-+        uint32 mapId = uint32(field[1].GetUInt16());
-+        float pos_x = field[2].GetFloat();
-+        float pos_y = field[3].GetFloat();
-+        //float pos_z = field[4].GetFloat();
-+        //float ori = field[5].GetFloat();
-+
-+        CellCoord c = Trinity::ComputeCellCoord(pos_x, pos_y);
-+        GridCoord g = Trinity::ComputeGridCoord(pos_x, pos_y);
-+        ASSERT(c.IsCoordValid() && "Invalid Cell coord!");
-+        ASSERT(g.IsCoordValid() && "Invalid Grid coord!");
-+        Map* npcbotmap = sMapMgr->CreateBaseMap(mapId);
-+        npcbotmap->LoadGrid(pos_x, pos_y);
-+        /*Creature* bot = npcbotmap->GetCreature(ObjectGuid(HighGuid::Unit, entry, tableGuid));
-+        ABORT();
-+        //debug
-+        if (!bot->IsAlive())
-+        {
-+            bot->Respawn();
-+            bot->ResetBotAI(1);
-+        }*/
-+
-+        TC_LOG_DEBUG("server.loading", ">> Spawned npcbot %s (id: %u, map: %u, grid: %u, cell: %u)", proto->Name.c_str(), entry, mapId, g.GetId(), c.GetId());
-+        botgrids.push_back(g.GetId());
-+        ++botcounter;
-+
-+    } while (res->NextRow());
-+
-+    botgrids.unique();
-+    TC_LOG_INFO("server.loading", ">> Spawned %u npcbot(s) within %lu grid(s) in %u ms", botcounter, botgrids.size(), GetMSTimeDiffToNow(botoldMSTime));
-+    //end npcbot
+
  }
  
  void MapManager::InitializeVisibilityDistanceInfo()
@@ -1244,20 +740,7 @@ index 4ad2a31..cb7b159 100644
  
      float x, y, z;
  
-+    //npcbot
-+    if (_owner->GetTypeId() == TYPEID_UNIT && _owner->ToCreature()->IsNPCBot())
-+    {
-+        Movement::MoveSplineInit init(_owner);
-+        init.MoveTo(x, y, z);
-+        init.SetParabolic(speedZ/*max_height*/, 0);
-+        init.SetOrientationFixed(true);
-+        init.SetVelocity(speedXY);
-+        init.Launch();
-+        Mutate(new EffectMovementGenerator(0), MOTION_SLOT_CONTROLLED);
-+        return;
-+    }
-+    //end npcbot
-+
+
      float moveTimeHalf = speedZ / Movement::gravity;
      float dist = 2 * moveTimeHalf * speedXY;
      _owner->GetClosePoint(x, y, z, _owner->GetObjectSize(), dist, angle);
@@ -1269,23 +752,7 @@ index 1343e09..b11c193 100644
      if (!fact_diff)
          return false;
  
-+    //npcbots - count bots as players but 2 times less affect and only if there is a players difference
-+    uint32 botsCount[2];
-+
-+    for (uint8 team = 0; team != 2; ++team)
-+    {
-+        botsCount[team] = 0;
-+
-+        for (GuidSet::iterator itr = m_activePlayers[team].begin(); itr != m_activePlayers[team].end(); ++itr)
-+        {
-+            if (Player* player = ObjectAccessor::FindPlayer(*itr))
-+                botsCount[team] += player->GetNpcBotsCount();
-+        }
-+    }
-+
-+    fact_diff += 0.5f * float(botsCount[0] - botsCount[1]) * diff / OUTDOORPVP_OBJECTIVE_UPDATE_INTERVAL;
-+    //end npcbot
-+
+
      uint32 Challenger = 0;
      float maxDiff = m_maxSpeed * diff;
  
@@ -1297,10 +764,7 @@ index 3ecd3f2..6e1b7e4 100644
      m_playerLogout = true;
      m_playerSave = save;
  
-+    //npcbot - free all bots and remove from botmap
-+    _player->RemoveAllBots();
-+    //end npcbots
-+
+
      if (_player)
      {
          if (ObjectGuid lguid = _player->GetLootGUID())
@@ -1312,13 +776,6 @@ index 8332219..0bb50ed 100644
              if (caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->HasAttribute(SPELL_ATTR0_STOP_ATTACK_TARGET) == 0 &&
                 (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED))
                  caster->ToPlayer()->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx);
-+
-+            //npcbot - CastItemCombatSpell for bots
-+            if (caster->GetTypeId() == TYPEID_UNIT &&
-+                caster->ToCreature()->GetBotAI() && !(m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET) &&
-+               (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED))
-+               caster->ToCreature()->CastCreatureItemCombatSpell(unitTarget, m_attackType, procVictim, procEx, this);
-+            //end npcbot
          }
  
          m_damage = damageInfo.damage;
@@ -1326,11 +783,7 @@ index 8332219..0bb50ed 100644
          if (Creature* pet = ObjectAccessor::GetCreature(*m_caster, m_caster->GetPetGUID()))
              pet->DespawnOrUnsummon();
  
-+    //NpcBot: If we are applying crowd control aura execute caster's delayed attack immediately to prevent instant CC break
-+    if (m_targets.GetUnitTarget() && (m_spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_TAKE_DAMAGE))
-+        m_caster->ExecuteDelayedSwingHit();
-+    //end NpcBot
-+
+
      PrepareTriggersExecutedOnHit();
  
      CallScriptOnCastHandlers();
@@ -1338,9 +791,7 @@ index 8332219..0bb50ed 100644
  
      // Stop Attack for some spells
      if (m_spellInfo->HasAttribute(SPELL_ATTR0_STOP_ATTACK_TARGET))
-+    //npcbot - disable for npcbots
-+    if (!(m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->GetBotAI()))
-+    //end npcbot
+
          m_caster->AttackStop();
  }
  
@@ -1348,11 +799,7 @@ index 8332219..0bb50ed 100644
  
  void Spell::SendSpellGo()
  {
-+    //npcbot - hook for spellcast finish
-+    if (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->GetBotAI())
-+        m_caster->ToCreature()->OnSpellGo(this);
-+    //end npcbot
-+
+
      // not send invisible spell casting
      if (!IsNeedSendToClient())
          return;
@@ -1364,11 +811,7 @@ index eba950a..e888957 100644
          }
      }
  
-+    //npcbot - apply bot spell cost mods
-+    if (powerCost > 0 && caster->GetTypeId() == TYPEID_UNIT && caster->ToCreature()->GetBotAI())
-+        caster->ToCreature()->ApplyCreatureSpellCostMods(this, powerCost);
-+    //end npcbot
-+
+
      // PCT mod from user auras by school
      powerCost = int32(powerCost * (1.0f + caster->GetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER + school)));
      if (powerCost < 0)
@@ -1380,9 +823,7 @@ index ad29af4..e9a74cb 100644
      TC_LOG_INFO("server.loading", "Loading Creature templates...");
      sObjectMgr->LoadCreatureTemplates();
  
-+    TC_LOG_INFO("server.loading", "Loading Creature template outfits...");     // must be after LoadCreatureTemplates
-+    sObjectMgr->LoadCreatureOutfits();
-+
+
      TC_LOG_INFO("server.loading", "Loading Equipment templates...");           // must be after LoadCreatureTemplates
      sObjectMgr->LoadEquipmentTemplates();
  
@@ -1394,8 +835,7 @@ index 3b495c8..a8b49ad 100644
  #include "CreatureAI.h"
  #include "Player.h"
  #include "Pet.h"
-+#include "bot_ai.h"
-+#include "botmgr.h"
+
  
  template<typename E, typename T = char const*>
  struct EnumName
@@ -1403,16 +843,7 @@ index 3b495c8..a8b49ad 100644
          if (!charID)
              return false;
  
-+        uint32 id = atoi(charID);
-+
-+        CreatureTemplate const* creInfo = sObjectMgr->GetCreatureTemplate(id);
-+
-+        if (!(creInfo->flags_extra & CREATURE_FLAG_EXTRA_NPCBOT))
-+        {
-+        char* charID = handler->extractKeyFromLink((char*)args, "Hcreature_entry");
-+        if (!charID)
-+            return false;
-+
+
          uint32 id  = atoi(charID);
          if (!sObjectMgr->GetCreatureTemplate(id))
              return false;
@@ -1420,97 +851,7 @@ index 3b495c8..a8b49ad 100644
  
          sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
          return true;
-+        } else {
-+        char* charID = handler->extractKeyFromLink((char*)args, "Hcreature_entry");
-+        if (!charID)
-+            return false;
-+
-+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_NPCBOT_OWNER);
-+        //"SELECT owner FROM character_npcbot WHERE entry = ?", CONNECTION_SYNCH
-+        stmt->setUInt32(0, id);
-+        PreparedQueryResult res1 = CharacterDatabase.Query(stmt);
-+        if (res1)
-+        {
-+            handler->PSendSysMessage("Npcbot %u already exists in `characters_npcbot` table!", id);
-+            handler->SendSysMessage("If you want to replace this bot to new location use '.npc move' command");
-+            handler->SetSentErrorMessage(true);
-+            return false;
-+        }
-+
-+        stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_BY_ID);
-+        //"SELECT guid FROM creature WHERE id = ?", CONNECTION_SYNCH
-+        stmt->setUInt32(0, id);
-+        PreparedQueryResult res2 = WorldDatabase.Query(stmt);
-+        if (res2)
-+        {
-+            handler->PSendSysMessage("Npcbot %u already exists in `creature` table!", id);
-+            handler->SetSentErrorMessage(true);
-+            return false;
-+        }
-+
-+        Player* chr = handler->GetSession()->GetPlayer();
-+
-+        if (chr->GetTransport())
-+        {
-+            handler->SendSysMessage("Cannot spawn bots on transport!");
-+            handler->SetSentErrorMessage(true);
-+            return false;
-+        }
-+
-+        float x = chr->GetPositionX();
-+        float y = chr->GetPositionY();
-+        float z = chr->GetPositionZ();
-+        float o = chr->GetOrientation();
-+        Map* map = chr->GetMap();
-+
-+        if (map->Instanceable())
-+        {
-+            handler->SendSysMessage("Cannot spawn bots in instances!");
-+            handler->SetSentErrorMessage(true);
-+            return false;
-+        }
-+
-+        Creature* creature = new Creature();
-+        if (!creature->Create(map->GenerateLowGuid<HighGuid::Unit>(), map, chr->GetPhaseMaskForSpawn(), id, x, y, z, o))
-+        {
-+            delete creature;
-+            return false;
-+        }
-+
-+        uint8 roleMask = BOT_ROLE_DPS;
-+
-+        uint8 m_class = creature->GetCreatureTemplate()->trainer_class;
-+        if (!(m_class == CLASS_WARRIOR || m_class == CLASS_ROGUE ||
-+            m_class == CLASS_PALADIN || m_class == CLASS_DEATH_KNIGHT ||
-+            m_class == CLASS_SHAMAN || m_class == BOT_CLASS_BM))
-+            roleMask |= BOT_ROLE_RANGED;
-+        if (m_class == CLASS_PRIEST || m_class == CLASS_DRUID ||
-+            m_class == CLASS_SHAMAN || m_class == CLASS_PALADIN)
-+            roleMask |= BOT_ROLE_HEAL;
-+
-+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_NPCBOT);
-+        //"INSERT INTO characters_npcbot (entry, roles) VALUES (?, ?)", CONNECTION_SYNCH
-+        stmt->setUInt32(0, id);
-+        stmt->setUInt8(1, roleMask);
-+        CharacterDatabase.DirectExecute(stmt);
-+
-+        creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), chr->GetPhaseMaskForSpawn());
-+
-+        uint32 db_guid = creature->GetSpawnId();
-+        if (!creature->LoadBotCreatureFromDB(db_guid, map))
-+        {
-+            handler->SendSysMessage("Cannot load npcbot from DB!");
-+            handler->SetSentErrorMessage(true);
-+            //return false;
-+            delete creature;
-+            return false;
-+        }
-+
-+        sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
-+
-+        handler->SendSysMessage("Npcbot successfully spawned.");
-+        return true;
-+    }
+
      }
  
      //add item in vendorlist
@@ -1523,22 +864,7 @@ index 0592bb5..63f2c8e 100644
  // start198
  // start199
 -// start200
-+//Bots
-+void AddSC_death_knight_bot();
-+void AddSC_druid_bot();
-+void AddSC_hunter_bot();
-+void AddSC_mage_bot();
-+void AddSC_paladin_bot();
-+void AddSC_priest_bot();
-+void AddSC_rogue_bot();
-+void AddSC_shaman_bot();
-+void AddSC_warlock_bot();
-+void AddSC_warrior_bot();
-+void AddSC_blademaster_bot();
-+void AddSC_script_bot_commands();
-+//advanced
-+//void AddSC_BotQuests_chapter1();
-+//end Bots
+
  
  // The name of this function should match:
  // void Add${NameOfDirectory}Scripts()
@@ -1547,22 +873,7 @@ index 0592bb5..63f2c8e 100644
  // end198
  // end199
 -// end200
-+    //Bots
-+    AddSC_death_knight_bot();
-+    AddSC_druid_bot();
-+    AddSC_hunter_bot();
-+    AddSC_mage_bot();
-+    AddSC_paladin_bot();
-+    AddSC_priest_bot();
-+    AddSC_rogue_bot();
-+    AddSC_shaman_bot();
-+    AddSC_warlock_bot();
-+    AddSC_warrior_bot();
-+    AddSC_blademaster_bot();
-+    AddSC_script_bot_commands();
-+    //advanced
-+    //AddSC_BotQuests_chapter1();
-+    //end Bots
+
  }
 diff --git a/src/server/scripts/Spells/spell_paladin.cpp b/src/server/scripts/Spells/spell_paladin.cpp
 index 6de95af..d5e73d4 100644
@@ -1572,12 +883,8 @@ index 6de95af..d5e73d4 100644
              {
                  healPct = GetSpellInfo()->Effects[EFFECT_1].CalcValue();
                  absorbPct = GetSpellInfo()->Effects[EFFECT_0].CalcValue();
-+
-+                //npcbot - allow for npcbots
-+                if (GetUnitOwner()->GetTypeId() == TYPEID_UNIT && GetUnitOwner()->ToCreature()->IsNPCBot())
-+                    return true;
-+                //end npcbot
-+
+
+
                  return GetUnitOwner()->GetTypeId() == TYPEID_PLAYER;
              }
  
@@ -1585,40 +892,6 @@ index 6de95af..d5e73d4 100644
                  Unit* victim = GetTarget();
                  int32 remainingHealth = victim->GetHealth() - dmgInfo.GetDamage();
                  uint32 allowedHealth = victim->CountPctFromMaxHealth(35);
-+
-+                //npcbot - calc for bots
-+                if (victim->GetTypeId() == TYPEID_UNIT/* && victim->ToCreature()->IsNPCBot()*/)
-+                {
-+                    if (remainingHealth <= 0 && !victim->ToCreature()->GetSpellHistory()->HasCooldown(PAL_SPELL_ARDENT_DEFENDER_HEAL))
-+                    {
-+                        // Cast healing spell, completely avoid damage
-+                        absorbAmount = dmgInfo.GetDamage();
-+
-+                        uint32 defenseSkillValue = victim->GetDefenseSkillValue();
-+                        // Max heal when defense skill denies critical hits from raid bosses
-+                        // Formula: max defense at level + 140 (raiting from gear)
-+                        uint32 reqDefForMaxHeal  = victim->getLevel() * 5 + 140;
-+                        float pctFromDefense = (defenseSkillValue >= reqDefForMaxHeal)
-+                            ? 1.0f
-+                            : float(defenseSkillValue) / float(reqDefForMaxHeal);
-+
-+                        int32 healAmount = int32(victim->CountPctFromMaxHealth(int32(healPct * pctFromDefense)));
-+                        victim->CastCustomSpell(victim, PAL_SPELL_ARDENT_DEFENDER_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff);
-+                        victim->ToCreature()->AddBotSpellCooldown(PAL_SPELL_ARDENT_DEFENDER_HEAL, 120 * IN_MILLISECONDS);
-+                    }
-+                    else if (remainingHealth < int32(allowedHealth))
-+                    {
-+                        // Reduce damage that brings us under 35% (or full damage if we are already under 35%) by x%
-+                        uint32 damageToReduce = (victim->GetHealth() < allowedHealth)
-+                            ? dmgInfo.GetDamage()
-+                            : allowedHealth - remainingHealth;
-+                        absorbAmount = CalculatePct(damageToReduce, absorbPct);
-+                    }
-+
-+                    return;
-+                }
-+                //end npcbot
-+
                  // If damage kills us
                  if (remainingHealth <= 0 && !victim->GetSpellHistory()->HasCooldown(PAL_SPELL_ARDENT_DEFENDER_HEAL))
                  {
@@ -1630,7 +903,6 @@ index 9e2d265..afa5e3c 100644
  
              bool Load() override
              {
-+                if (GetCaster() && GetCaster()->GetTypeId() == TYPEID_UNIT && GetCaster()->ToCreature()->IsNPCBot()) return true;
                  return GetCaster()->GetTypeId() == TYPEID_PLAYER;
              }
  
@@ -1638,8 +910,7 @@ index 9e2d265..afa5e3c 100644
              SpellCastResult CheckCast()
              {
                  Player* caster = GetCaster()->ToPlayer();
-+                if (!caster && GetCaster()->GetTypeId() == TYPEID_UNIT && GetCaster()->ToCreature()->IsNPCBot())
-+                    caster = (Player*)GetCaster();
+
                  if (Unit* target = GetExplTargetUnit())
                      if (!caster->IsFriendlyTo(target))
                      {
@@ -1647,7 +918,6 @@ index 9e2d265..afa5e3c 100644
  
              bool Load() override
              {
-+                if (GetCaster() && GetCaster()->GetTypeId() == TYPEID_UNIT && GetCaster()->ToCreature()->IsNPCBot()) return true;
                  return GetCaster() && GetCaster()->GetTypeId() == TYPEID_PLAYER;
              }
  
@@ -1659,127 +929,7 @@ index e85d205..b795cea 100644
  #
  ###################################################################################################
  
-+###################################################################################################
-+# NPCBOT CONFIGURATION
-+#
-+#    NpcBot.Enable
-+#        Description: Enable NpcBot system
-+#        Default:   1 - enable
-+#                   0 - disable
-+
-+NpcBot.Enable = 1
-+
-+#
-+#    NpcBot.AllowGM
-+#        Description: Allow GM's to have NpcBots
-+#        Default:   1 - Allow
-+#                   0 - disable
-+
-+NpcBot.AllowGM = 1
-+
-+#    NpcBot.MaxBots
-+#        Description: Maximum number of bots allowed for players.
-+#        Default:   1
-+#        Recommend: 1-2
-+#        Max:       4
-+
-+NpcBot.MaxBots = 1
-+
-+#    NpcBot.MaxBotsPerClass
-+#        Description: Maximum bots of each class allowed for players.
-+#        Default:   1
-+#                   0 - no limit
-+
-+NpcBot.MaxBotsPerClass = 1
-+
-+#    NpcBot.BaseFollowDistance
-+#        Description: Default bot follow distance.
-+#        Note: This parameter determines bots' formation size, distance at which bots will chase and attack enemies.
-+#        Note2: This parameter is set for each player at login.
-+#        Default:   30
-+
-+NpcBot.BaseFollowDistance = 20
-+
-+#    NpcBot.XpReduction
-+#        Description: XP percent penalty for each bot used starting with second.
-+#        Example: 3 bots, xp reduction is 20: ((3-1)*20) = 40%, 60% exp gained only.
-+#        Note: Maximum overall xp reduction is 90%.
-+#        Default:   0
-+
-+NpcBot.XpReduction = 0
-+
-+#    NpcBot.HealTargetIconsMask
-+#        Description: Icon number bitmask which bots use to search for additional targets to heal (out of party).
-+#        Note: Many creatures cannot accept heal.
-+#        Example: to check Star, Triangle and Square we need 1 + 8 + 32 = 41.
-+#        Default:   0 (Disable)
-+#                   1 - Star
-+#                   2 - Circle
-+#                   4 - Diamond
-+#                   8 - Triangle
-+#                   16 - Moon
-+#                   32 - Square
-+#                   64 - Cross
-+#                   128 - Skull
-+
-+NpcBot.HealTargetIconsMask = 0
-+
-+#    NpcBot.Mult.Damage.Melee
-+#    NpcBot.Mult.Damage.Spell
-+#    NpcBot.Mult.Healing
-+#        Description: Multipliers for bots' damage and healing. Allows to balance bots vs players.
-+#        Minimum:   0.1
-+#        Maximum:  10.0
-+#        Default:   1.0
-+
-+NpcBot.Mult.Damage.Melee = 1.0
-+NpcBot.Mult.Damage.Spell = 1.0
-+NpcBot.Mult.Healing      = 1.0
-+
-+#    NpcBot.Enable.Dungeon
-+#    NpcBot.Enable.Raid
-+#    NpcBot.Enable.BG
-+#    NpcBot.Enable.Arena
-+#    NpcBot.Enable.DungeonFinder
-+#        Description: Allow bots to enter PvE/PvP areas and Dungeon Finder query
-+#        Default:   1 - (NpcBot.Enable.Dungeon)
-+#                   0 - (NpcBot.Enable.Raid)
-+#                   0 - (NpcBot.Enable.BG)
-+#                   0 - (NpcBot.Enable.Arena)
-+#                   1 - (NpcBot.Enable.DungeonFinder)
-+
-+NpcBot.Enable.Dungeon       = 1
-+NpcBot.Enable.Raid          = 0
-+NpcBot.Enable.BG            = 0
-+NpcBot.Enable.Arena         = 0
-+NpcBot.Enable.DungeonFinder = 1
-+
-+#    NpcBot.Limit.Dungeon
-+#    NpcBot.Limit.Raid
-+#        Description: Enable/Disable instance players limitation rules for bots.
-+#        Default:   1 - (NpcBot.Limit.Dungeon)
-+#                   1 - (NpcBot.Limit.Raid)
-+
-+NpcBot.Limit.Dungeon = 1
-+NpcBot.Limit.Raid    = 1
-+
-+#    NpcBot.Cost
-+#        Description: Bot recruitment cost (in copper).
-+#        Note: This value is for level 80 characters.
-+#              Cost is reduced for lower levels by simple formula: (cost * level / 80).
-+#        Default:   1000000 (100 gold, 1g25s at level 1)
-+
-+NpcBot.Cost = 1000000
-+
-+#    NpcBot.PvP
-+#        Description: Allow bots to attack player-controlled units (players, pets, bots, etc.)
-+#        Note: This rule only applies to player-controlled bots
-+#        Default:   1
-+
-+NpcBot.PvP = 1
-+
-+#
-+###################################################################################################
+
 +
  #
  # Prepatch by LordPsyan.

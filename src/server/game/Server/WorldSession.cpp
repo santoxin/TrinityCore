@@ -463,6 +463,10 @@ void WorldSession::LogoutPlayer(bool save)
 
     if (_player)
     {
+		//npcbot - free all bots and remove from botmap
+		_player->RemoveAllBots();
+		//end npcbots
+		
         if (ObjectGuid lguid = _player->GetLootGUID())
             DoLootRelease(lguid);
 

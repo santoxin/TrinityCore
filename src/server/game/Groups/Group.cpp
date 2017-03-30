@@ -105,7 +105,11 @@ bool Group::Create(Player* leader)
 
     if (m_groupType & GROUPTYPE_RAID)
         _initRaidSubGroupsCounter();
-
+    //npcbot - set loot mode on create
+    if (leader->HaveBot()) //player + npcbot so set to free-for-all on create
+        m_lootMethod = FREE_FOR_ALL;
+    else
+    //end npcbot
     if (!isLFGGroup())
         m_lootMethod = GROUP_LOOT;
 
@@ -363,21 +367,26 @@ bool Group::AddMember(Player* player)
     m_memberSlots.push_back(member);
 
     SubGroupCounterIncrease(subGroup);
-
-    player->SetGroupInvite(NULL);
-    if (player->GetGroup())
+    //npcbot - check if trying to add bot
+    if (player->GetGUID().IsPlayer())
     {
-        if (isBGGroup() || isBFGroup()) // if player is in group and he is being added to BG raid group, then call SetBattlegroundRaid()
-            player->SetBattlegroundOrBattlefieldRaid(this, subGroup);
-        else //if player is in bg raid and we are adding him to normal group, then call SetOriginalGroup()
-            player->SetOriginalGroup(this, subGroup);
+    //end npcbot
+		player->SetGroupInvite(NULL);
+		if (player->GetGroup())
+		{
+			if (isBGGroup() || isBFGroup()) // if player is in group and he is being added to BG raid group, then call SetBattlegroundRaid()
+				player->SetBattlegroundOrBattlefieldRaid(this, subGroup);
+			else //if player is in bg raid and we are adding him to normal group, then call SetOriginalGroup()
+				player->SetOriginalGroup(this, subGroup);
+		}
+		else //if player is not in group, then call set group
+			player->SetGroup(this, subGroup);
+
+		// if the same group invites the player back, cancel the homebind timer
+		player->m_InstanceValid = player->CheckInstanceValidity(false);
+    //npcbot
     }
-    else //if player is not in group, then call set group
-        player->SetGroup(this, subGroup);
-
-    // if the same group invites the player back, cancel the homebind timer
-    player->m_InstanceValid = player->CheckInstanceValidity(false);
-
+    //end npcbot
     if (!isRaidGroup())                                      // reset targetIcons for non-raid-groups
     {
         for (uint8 i = 0; i < TARGETICONCOUNT; ++i)
@@ -400,83 +409,88 @@ bool Group::AddMember(Player* player)
 
     SendUpdate();
     sScriptMgr->OnGroupAddMember(this, player->GetGUID());
-
-    if (!IsLeader(player->GetGUID()) && !isBGGroup() && !isBFGroup())
+    //npcbot - check 2
+    if (player->GetGUID().IsPlayer())
     {
-        // reset the new member's instances, unless he is currently in one of them
-        // including raid/heroic instances that they are not permanently bound to!
-        player->ResetInstances(INSTANCE_RESET_GROUP_JOIN, false);
-        player->ResetInstances(INSTANCE_RESET_GROUP_JOIN, true);
+    //end npcbot
+		if (!IsLeader(player->GetGUID()) && !isBGGroup() && !isBFGroup())
+		{
+			// reset the new member's instances, unless he is currently in one of them
+			// including raid/heroic instances that they are not permanently bound to!
+			player->ResetInstances(INSTANCE_RESET_GROUP_JOIN, false);
+			player->ResetInstances(INSTANCE_RESET_GROUP_JOIN, true);
 
-        if (player->getLevel() >= LEVELREQUIREMENT_HEROIC)
-        {
-            if (player->GetDungeonDifficulty() != GetDungeonDifficulty())
-            {
-                player->SetDungeonDifficulty(GetDungeonDifficulty());
-                player->SendDungeonDifficulty(true);
-            }
-            if (player->GetRaidDifficulty() != GetRaidDifficulty())
-            {
-                player->SetRaidDifficulty(GetRaidDifficulty());
-                player->SendRaidDifficulty(true);
-            }
-        }
+			if (player->getLevel() >= LEVELREQUIREMENT_HEROIC)
+			{
+				if (player->GetDungeonDifficulty() != GetDungeonDifficulty())
+				{
+					player->SetDungeonDifficulty(GetDungeonDifficulty());
+					player->SendDungeonDifficulty(true);
+				}
+				if (player->GetRaidDifficulty() != GetRaidDifficulty())
+				{
+					player->SetRaidDifficulty(GetRaidDifficulty());
+					player->SendRaidDifficulty(true);
+				}
+			}
+		}
+		player->SetGroupUpdateFlag(GROUP_UPDATE_FULL);
+		UpdatePlayerOutOfRange(player);
+
+		// quest related GO state dependent from raid membership
+		if (isRaidGroup())
+			player->UpdateForQuestWorldObjects();
+
+		{
+			// Broadcast new player group member fields to rest of the group
+			player->SetFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
+
+			UpdateData groupData;
+			WorldPacket groupDataPacket;
+
+			// Broadcast group members' fields to player
+			for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
+			{
+				if (itr->GetSource() == player)
+					continue;
+
+				if (Player* existingMember = itr->GetSource())
+				{
+					if (player->HaveAtClient(existingMember))
+					{
+						existingMember->SetFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
+						existingMember->BuildValuesUpdateBlockForPlayer(&groupData, player);
+						existingMember->RemoveFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
+					}
+
+					if (existingMember->HaveAtClient(player))
+					{
+						UpdateData newData;
+						WorldPacket newDataPacket;
+						player->BuildValuesUpdateBlockForPlayer(&newData, existingMember);
+						if (newData.HasData())
+						{
+							newData.BuildPacket(&newDataPacket);
+							existingMember->SendDirectMessage(&newDataPacket);
+						}
+					}
+				}
+			}
+
+			if (groupData.HasData())
+			{
+				groupData.BuildPacket(&groupDataPacket);
+				player->SendDirectMessage(&groupDataPacket);
+			}
+
+			player->RemoveFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
+		}
+
+		if (m_maxEnchantingLevel < player->GetSkillValue(SKILL_ENCHANTING))
+			m_maxEnchantingLevel = player->GetSkillValue(SKILL_ENCHANTING);
+    //npcbot
     }
-    player->SetGroupUpdateFlag(GROUP_UPDATE_FULL);
-    UpdatePlayerOutOfRange(player);
-
-    // quest related GO state dependent from raid membership
-    if (isRaidGroup())
-        player->UpdateForQuestWorldObjects();
-
-    {
-        // Broadcast new player group member fields to rest of the group
-        player->SetFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
-
-        UpdateData groupData;
-        WorldPacket groupDataPacket;
-
-        // Broadcast group members' fields to player
-        for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
-        {
-            if (itr->GetSource() == player)
-                continue;
-
-            if (Player* existingMember = itr->GetSource())
-            {
-                if (player->HaveAtClient(existingMember))
-                {
-                    existingMember->SetFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
-                    existingMember->BuildValuesUpdateBlockForPlayer(&groupData, player);
-                    existingMember->RemoveFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
-                }
-
-                if (existingMember->HaveAtClient(player))
-                {
-                    UpdateData newData;
-                    WorldPacket newDataPacket;
-                    player->BuildValuesUpdateBlockForPlayer(&newData, existingMember);
-                    if (newData.HasData())
-                    {
-                        newData.BuildPacket(&newDataPacket);
-                        existingMember->SendDirectMessage(&newDataPacket);
-                    }
-                }
-            }
-        }
-
-        if (groupData.HasData())
-        {
-            groupData.BuildPacket(&groupDataPacket);
-            player->SendDirectMessage(&groupDataPacket);
-        }
-
-        player->RemoveFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
-    }
-
-    if (m_maxEnchantingLevel < player->GetSkillValue(SKILL_ENCHANTING))
-        m_maxEnchantingLevel = player->GetSkillValue(SKILL_ENCHANTING);
-
+    //end npcbot
     return true;
 }
 
@@ -614,6 +628,9 @@ bool Group::RemoveMember(ObjectGuid guid, const RemoveMethod& method /*= GROUP_R
         }
 
         if (m_memberMgr.getSize() < ((isLFGGroup() || isBGGroup()) ? 1u : 2u))
+        //npcbot
+        if (GetMembersCount() < ((isLFGGroup() || isBGGroup()) ? 1u : 2u))
+        //end npcbot
             Disband();
 
         return true;

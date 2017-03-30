@@ -324,6 +324,8 @@ class TC_GAME_API Group
         // FG: evil hacks
         void BroadcastGroupUpdate(void);
 
+        //Bot
+        ObjectGuid const *GetTargetIcons() const { return m_targetIcons; }
         // ai playerbot mod
         ObjectGuid GetTargetIcon(int index) { return m_targetIcons[index]; }
         Rolls* GetRolls() { return &RollId; }

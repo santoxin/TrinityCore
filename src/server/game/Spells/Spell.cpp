@@ -2404,6 +2404,12 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
             if (caster->GetTypeId() == TYPEID_PLAYER && !m_spellInfo->HasAttribute(SPELL_ATTR0_STOP_ATTACK_TARGET) &&
                 (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED))
                 caster->ToPlayer()->CastItemCombatSpell(spellDamageInfo);
+			//npcbot - CastItemCombatSpell for bots
+            if (caster->GetTypeId() == TYPEID_UNIT &&
+                caster->ToCreature()->GetBotAI() && !(m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET) &&
+               (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED))
+               caster->ToCreature()->CastCreatureItemCombatSpell(unitTarget, m_attackType, procVictim, procEx, this);
+			//end npcbot				
         }
     }
     // Passive spell hits/misses or active spells only misses (only triggers)
@@ -3180,6 +3186,10 @@ void Spell::_cast(bool skipCheck)
     if (m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET))
         if (Creature* pet = ObjectAccessor::GetCreature(*m_caster, m_caster->GetPetGUID()))
             pet->DespawnOrUnsummon();
+    //NpcBot: If we are applying crowd control aura execute caster's delayed attack immediately to prevent instant CC break
+    if (m_targets.GetUnitTarget() && (m_spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_TAKE_DAMAGE))
+        m_caster->ExecuteDelayedSwingHit();
+    //end NpcBot
 
     PrepareTriggersExecutedOnHit();
 
@@ -3654,6 +3664,9 @@ void Spell::finish(bool ok)
 
     // Stop Attack for some spells
     if (m_spellInfo->HasAttribute(SPELL_ATTR0_STOP_ATTACK_TARGET))
+    //npcbot - disable for npcbots
+    if (!(m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->GetBotAI()))
+    //end npcbot		
         m_caster->AttackStop();
 }
 
@@ -3939,6 +3952,11 @@ void Spell::SendSpellStart()
 
 void Spell::SendSpellGo()
 {
+	//npcbot - hook for spellcast finish
+    if (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->GetBotAI())
+        m_caster->ToCreature()->OnSpellGo(this);
+    //end npcbot
+
     // not send invisible spell casting
     if (!IsNeedSendToClient())
         return;
