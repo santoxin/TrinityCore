@@ -1115,7 +1115,7 @@ class spell_pri_renew : public SpellScriptLoader
             PrepareAuraScript(spell_pri_renew_AuraScript);
 
             bool Load() override
-            
+			{
 			    if (GetCaster() && GetCaster()->GetTypeId() == TYPEID_UNIT && GetCaster()->ToCreature()->IsNPCBot()) return true;
                 return GetCaster() && GetCaster()->GetTypeId() == TYPEID_PLAYER;
             }

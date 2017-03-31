@@ -85,11 +85,11 @@ class HostileDispelTargetCheck
                 u->GetReactionTo(me) <= REP_NEUTRAL &&
                 ai->IsInBotParty(u->GetVictim()))
             {
-                if (checksteal && u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(30449))) return false;//immune to steal
+                if (checksteal && u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(30449),NULL)) return false;//immune to steal
                 if (!checksteal)
                 {
-                    if (me->getLevel() >= 70 && u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(32375))) return false;//immune to mass dispel
-                    if (me->getLevel() < 70 && u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(527))) return false;//immune to direct dispel
+                    if (me->getLevel() >= 70 && u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(32375),NULL)) return false;//immune to mass dispel
+                    if (me->getLevel() < 70 && u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(527),NULL)) return false;//immune to direct dispel
                 }
                 Unit::AuraMap const &Auras = u->GetOwnedAuras();
                 SpellInfo const* Info;
@@ -203,9 +203,9 @@ class PolyUnitCheck
                  u->HasAuraType(SPELL_AURA_PERIODIC_DAMAGE))
                  return false;
 
-             if (me->ToCreature()->GetBotClass() == BOT_CLASS_MAGE && !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(118)))//Polymorph
+             if (me->ToCreature()->GetBotClass() == BOT_CLASS_MAGE && !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(118),NULL))//Polymorph
                  return true;
-             if (me->ToCreature()->GetBotClass() == BOT_CLASS_SHAMAN && !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(51514)))//Hex
+             if (me->ToCreature()->GetBotClass() == BOT_CLASS_SHAMAN && !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(51514), NULL))//Hex
                  return true;
 
              return false;
@@ -252,10 +252,10 @@ class FearUnitCheck
                  return false;
 
              if (me->ToCreature()->GetBotClass() == BOT_CLASS_WARLOCK &&
-                 !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(5782)))//fear rank1
+                 !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(5782), NULL))//fear rank1
                  return true;
              if (me->ToCreature()->GetBotClass() == BOT_CLASS_HUNTER &&
-                 !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(1513)))//scare beast rank1
+                 !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(1513), NULL))//scare beast rank1
                  return true;
 
              return false;
@@ -315,16 +315,16 @@ class StunUnitCheck
                  u->HasAuraWithMechanic((1<<MECHANIC_SHACKLE)|(1<<MECHANIC_SLEEP)|(1<<MECHANIC_DISORIENTED)))
                  return false;
              if (me->ToCreature()->GetBotClass() == BOT_CLASS_PALADIN &&
-                 !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(20066)))//repentance
+                 !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(20066), NULL))//repentance
                  return true;
              if (me->ToCreature()->GetBotClass() == BOT_CLASS_HUNTER &&
-                 !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(60210)))//freezing arrow effect
+                 !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(60210), NULL))//freezing arrow effect
                  return true;
              if (me->ToCreature()->GetBotClass() == BOT_CLASS_HUNTER &&
-                 !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(19386)))//wyvern sting rank 1
+                 !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(19386), NULL))//wyvern sting rank 1
                  return true;
              if (me->ToCreature()->GetBotClass() == BOT_CLASS_HUNTER &&
-                 !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(1991)))//scatter shot
+                 !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(1991), NULL))//scatter shot
                  return true;
 
              return false;
@@ -377,7 +377,7 @@ class UndeadCCUnitCheck
              if (u->HasAuraType(SPELL_AURA_PERIODIC_DAMAGE) &&
                  (m_spellId == 9484 || m_spellId == 9485 || m_spellId == 10955))//shackle undead
                  return false;
-             if (!u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(m_spellId)))
+             if (!u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(m_spellId), NULL))
                  return true;
 
              return false;
@@ -425,7 +425,7 @@ class RootUnitCheck
                  u->HasAura(20066)/*repentance*/ ||
                  u->HasAuraWithMechanic(1<<MECHANIC_SHACKLE)/*shackle undead*/)
                  return false;
-             if (!u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(m_spellId)))
+             if (!u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(m_spellId), NULL))
                  return true;
 
              return false;
@@ -476,7 +476,7 @@ class CastingUnitCheck
                  u->GetCreatureType() == CREATURE_TYPE_GIANT ||
                  u->GetCreatureType() == CREATURE_TYPE_UNDEAD))
                  return false;
-             if (!m_spell || !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(m_spell)))
+             if (!m_spell || !u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(m_spell), NULL))
                  return true;
 
              return false;
@@ -542,7 +542,7 @@ class TranquilTargetCheck
                  u->GetReactionTo(me) <= REP_NEUTRAL &&
                  ai->IsInBotParty(u->GetVictim()))
              {
-                 if (u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(19801))) return false;//immune to tranquilizing shot
+                 if (u->IsImmunedToSpell(sSpellMgr->GetSpellInfo(19801), NULL)) return false;//immune to tranquilizing shot
                  Unit::AuraMap const &Auras = u->GetOwnedAuras();
                  for (Unit::AuraMap::const_iterator itr = Auras.begin(); itr != Auras.end(); ++itr)
                  {

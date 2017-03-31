@@ -85,7 +85,7 @@ public:
         void Aggro(Unit*) { }
         void AttackStart(Unit*) { }
         void KilledUnit(Unit*) { }
-        void EnterEvadeMode() { }
+        void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER) { }
         void MoveInLineOfSight(Unit*) { }
         void JustDied(Unit*) { me->DisappearAndDie(); }
 

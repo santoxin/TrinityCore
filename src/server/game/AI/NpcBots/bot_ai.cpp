@@ -7008,7 +7008,7 @@ void bot_minion_ai::UpdateReviveTimer(uint32 diff)
              if (_reviveTimer > 0)   _reviveTimer = 0;
      }
 }
-void bot_minion_ai::EnterEvadeMode(bool /*force*/)
+void bot_minion_ai::EnterEvadeMode(EvadeReason why)
 {
      //if (me->IsInCombat())
      //    return;
