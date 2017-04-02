@@ -2334,7 +2334,20 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 #ifdef PRESETS
         PresetMapType presetMap; // presetMap[presetId] = presetData
 #endif
-
+		/*********************************************************/
+		/***                     BOT SYSTEM                    ***/
+		/*********************************************************/
+		void SetBotMgr(BotMgr* mgr) { ASSERT(!_botMgr); _botMgr = mgr; }
+		BotMgr* GetBotMgr() const { return _botMgr; }
+		bool HaveBot() const;
+		uint8 GetNpcBotsCount(bool inWorldOnly = false) const;
+		uint8 GetBotFollowDist() const;
+		void SetBotFollowDist(int8 dist);
+		void SetBotsShouldUpdateStats();
+		void RemoveAllBots(uint8 removetype = 0);
+		/*********************************************************/
+		/***                 END BOT SYSTEM                    ***/
+		/*********************************************************/
     protected:
         // Gamemaster whisper whitelist
         GuidList WhisperList;
@@ -2428,21 +2441,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void _SaveTalents(SQLTransaction& trans);
         void _SaveStats(SQLTransaction& trans) const;
         void _SaveInstanceTimeRestrictions(SQLTransaction& trans);
-
-        /*********************************************************/
-        /***                     BOT SYSTEM                    ***/
-        /*********************************************************/
-        void SetBotMgr(BotMgr* mgr) { ASSERT(!_botMgr); _botMgr = mgr; }
-        BotMgr* GetBotMgr() const { return _botMgr; }
-        bool HaveBot() const;
-        uint8 GetNpcBotsCount(bool inWorldOnly = false) const;
-        uint8 GetBotFollowDist() const;
-        void SetBotFollowDist(int8 dist);
-        void SetBotsShouldUpdateStats();
-        void RemoveAllBots(uint8 removetype = 0);
-        /*********************************************************/
-        /***                 END BOT SYSTEM                    ***/
-        /*********************************************************/
 
         /*********************************************************/
         /***              ENVIRONMENTAL SYSTEM                 ***/
