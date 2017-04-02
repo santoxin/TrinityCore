@@ -58,7 +58,7 @@ public:
         void Aggro(Unit*) { }
         void AttackStart(Unit*) { }
         void KilledUnit(Unit*) { }
-        void EnterEvadeMode() { bot_minion_ai::EnterEvadeMode(); }
+        void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER) { bot_minion_ai::EnterEvadeMode(why); }
         void MoveInLineOfSight(Unit* u) { bot_minion_ai::MoveInLineOfSight(u); }
         void JustDied(Unit* u) { me->SetBotsPetDied(); bot_minion_ai::JustDied(u); }
         void DoNonCombatActions() { }
@@ -394,7 +394,7 @@ public:
         void Aggro(Unit*) { }
         void AttackStart(Unit*) { }
         void KilledUnit(Unit*) { }
-        void EnterEvadeMode() { }
+        void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER) { }
         void MoveInLineOfSight(Unit*) { }
         void JustDied(Unit*) { m_creatureOwner->SetBotsPetDied(); }
         void DoNonCombatActions() { }

@@ -349,7 +349,7 @@ public:
         void EnterCombat(Unit* u) { bot_minion_ai::EnterCombat(u); }
         void Aggro(Unit*) { }
         void AttackStart(Unit*) { }
-        void EnterEvadeMode() { bot_minion_ai::EnterEvadeMode(); }
+        void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER) { bot_minion_ai::EnterEvadeMode(why); }
         void MoveInLineOfSight(Unit* u) { bot_minion_ai::MoveInLineOfSight(u); }
         void JustDied(Unit* u) { bot_minion_ai::JustDied(u); }
         void KilledUnit(Unit*) { }

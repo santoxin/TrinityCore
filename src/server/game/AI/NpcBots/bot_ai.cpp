@@ -10,7 +10,7 @@
 #include "MapManager.h"
 #include "ScriptedGossip.h"
 #include "SpellAuraEffects.h"
-+/*
+/*
 +NpcBot System by Graff (onlysuffering@gmail.com)
 +Original patch from: LordPsyan https://bitbucket.org/lordpsyan/trinitycore-patches/src/3b8b9072280e/Individual/11185-BOTS-NPCBots.patch
 +TODO:
@@ -40,7 +40,7 @@ extern uint8 _healTargetIconFlags;
 extern float _mult_dmg_melee;
 extern float _mult_dmg_spell;
 extern float _mult_healing;
-
+void ApplyPercentModFloatVar(float& var, float val, bool apply);
 bot_minion_ai::bot_minion_ai(Creature* creature) : bot_ai(creature)
 {
      Potion_cd = 0;
@@ -1129,9 +1129,9 @@ void bot_ai::_listAuras(Player* player, Unit* unit) const
      ch.PSendSysMessage("Ranged AP: %.1f", unit->GetTotalAttackPowerValue(RANGED_ATTACK));
      ch.PSendSysMessage("armor: %u", unit->GetArmor());
      ch.PSendSysMessage("crit: %.2f pct", unit->GetUnitCriticalChance(BASE_ATTACK, me));
-     ch.PSendSysMessage("dodge: %.2f pct", unit->GetUnitDodgeChance());
-     ch.PSendSysMessage("parry: %.2f pct", unit->GetUnitParryChance());
-     ch.PSendSysMessage("block: %.2f pct", unit->GetUnitBlockChance());
+     ch.PSendSysMessage("dodge: %.2f pct", unit->GetUnitDodgeChance(BASE_ATTACK,me));
+     ch.PSendSysMessage("parry: %.2f pct", unit->GetUnitParryChance(BASE_ATTACK,me));
+     ch.PSendSysMessage("block: %.2f pct", unit->GetUnitBlockChance(BASE_ATTACK,me));
      ch.PSendSysMessage("block value: %u", unit->GetShieldBlockValue());
      ch.PSendSysMessage("Damage taken melee: %.3f", unit->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, SPELL_SCHOOL_MASK_NORMAL));
      ch.PSendSysMessage("Damage taken spell: %.3f", unit->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, SPELL_SCHOOL_MASK_MAGIC));
@@ -1140,17 +1140,17 @@ void bot_ai::_listAuras(Player* player, Unit* unit) const
          WeaponAttackType type = BASE_ATTACK;
          float attSpeed = (unit->GetAttackTime(type) * unit->m_modAttackSpeedPct[type])/1000.f;
          ch.PSendSysMessage("Damage range mainhand: min: %.0f, max: %.0f", unit->GetFloatValue(UNIT_FIELD_MINDAMAGE), unit->GetFloatValue(UNIT_FIELD_MAXDAMAGE));
-         ch.PSendSysMessage("Damage mult mainhand: %.3f", unit->GetModifierValue(UNIT_MOD_DAMAGE_MAINHAND, BASE_PCT)*unit->GetModifierValue(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_PCT));
+         ch.PSendSysMessage("Damage mult mainhand: %.3f", unit->GetPctModifierValue(UNIT_MOD_DAMAGE_MAINHAND, BASE_PCT)*unit->GetPctModifierValue(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_PCT));
          ch.PSendSysMessage("Attack time mainhand: %.2f (%.1f DPS)", attSpeed,
-             ((unit->GetFloatValue(UNIT_FIELD_MINDAMAGE) + unit->GetFloatValue(UNIT_FIELD_MAXDAMAGE)) / 2) * unit->GetModifierValue(UNIT_MOD_DAMAGE_MAINHAND, BASE_PCT) * unit->GetModifierValue(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_PCT) / attSpeed);
+             ((unit->GetFloatValue(UNIT_FIELD_MINDAMAGE) + unit->GetFloatValue(UNIT_FIELD_MAXDAMAGE)) / 2) * unit->GetPctModifierValue(UNIT_MOD_DAMAGE_MAINHAND, BASE_PCT) * unit->GetPctModifierValue(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_PCT) / attSpeed);
          if (unit->haveOffhandWeapon())
          {
              type = OFF_ATTACK;
              attSpeed = (unit->GetAttackTime(type) * unit->m_modAttackSpeedPct[type])/1000.f;
              ch.PSendSysMessage("Damage range offhand: min: %.0f, max: %.0f", unit->GetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE), unit->GetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE));
-             ch.PSendSysMessage("Damage mult offhand: %.3f", unit->GetModifierValue(UNIT_MOD_DAMAGE_OFFHAND, BASE_PCT)*unit->GetModifierValue(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_PCT));
+             ch.PSendSysMessage("Damage mult offhand: %.3f", unit->GetPctModifierValue(UNIT_MOD_DAMAGE_OFFHAND, BASE_PCT)*unit->GetPctModifierValue(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_PCT));
              ch.PSendSysMessage("Attack time offhand: %.2f (%.1f DPS)", attSpeed,
-                 ((unit->GetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE) + unit->GetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE)) / 2) * unit->GetModifierValue(UNIT_MOD_DAMAGE_OFFHAND, BASE_PCT) * unit->GetModifierValue(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_PCT) / attSpeed);
+                 ((unit->GetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE) + unit->GetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE)) / 2) * unit->GetPctModifierValue(UNIT_MOD_DAMAGE_OFFHAND, BASE_PCT) * unit->GetPctModifierValue(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_PCT) / attSpeed);
          }
          if (unit != me ||
              (me->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2) &&
@@ -1162,9 +1162,9 @@ void bot_ai::_listAuras(Player* player, Unit* unit) const
              type = RANGED_ATTACK;
              attSpeed = (unit->GetAttackTime(type) * unit->m_modAttackSpeedPct[type])/1000.f;
              ch.PSendSysMessage("Damage range ranged: min: %.1f, max: %.1f", unit->GetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE), unit->GetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE));
-             ch.PSendSysMessage("Damage mult ranged: %.3f", unit->GetModifierValue(UNIT_MOD_DAMAGE_RANGED, BASE_PCT)*unit->GetModifierValue(UNIT_MOD_DAMAGE_RANGED, TOTAL_PCT));
+             ch.PSendSysMessage("Damage mult ranged: %.3f", unit->GetPctModifierValue(UNIT_MOD_DAMAGE_RANGED, BASE_PCT)*unit->GetPctModifierValue(UNIT_MOD_DAMAGE_RANGED, TOTAL_PCT));
              ch.PSendSysMessage("Attack time ranged: %.2f (%.1f DPS)", attSpeed,
-                 ((unit->GetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE) + unit->GetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE)) / 2) * unit->GetModifierValue(UNIT_MOD_DAMAGE_RANGED, BASE_PCT) * unit->GetModifierValue(UNIT_MOD_DAMAGE_RANGED, TOTAL_PCT) / attSpeed);
+                 ((unit->GetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE) + unit->GetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE)) / 2) * unit->GetPctModifierValue(UNIT_MOD_DAMAGE_RANGED, BASE_PCT) * unit->GetPctModifierValue(UNIT_MOD_DAMAGE_RANGED, TOTAL_PCT) / attSpeed);
          }
      }
      ch.PSendSysMessage("base hp: %u", unit->GetCreateHealth());
@@ -1389,7 +1389,7 @@ void bot_minion_ai::SetStats(bool force, bool shapeshift)
      }
 
      value *= armor_mod;
-     me->SetModifierValue(UNIT_MOD_ARMOR, BASE_VALUE, value);
+     me->SetStatFlatModifier(UNIT_MOD_ARMOR, BASE_VALUE, value);
      me->UpdateArmor(); //buffs will be took in consideration here
 
      //RESISTANCES
@@ -1397,7 +1397,7 @@ void bot_minion_ai::SetStats(bool force, bool shapeshift)
      {
          value = IAmFree() ? mylevel + 40 : std::max<int8>(int8(mylevel) - 20, 0);
          value += _getTotalBotStat(BOT_ITEM_MOD_RESIST_HOLY + (i - 1));
-         me->SetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + i), BASE_VALUE, value);
+         me->SetStatFlatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + i), BASE_VALUE, value);
          me->UpdateResistances(i);
      }
 
@@ -1784,17 +1784,17 @@ void bot_pet_ai::SetStats(bool force, bool /*unk*/)
                  break;
          }
 
-         me->SetModifierValue(UNIT_MOD_STAT_STRENGTH, BASE_VALUE, me->GetCreateStat(STAT_STRENGTH) - 9.f);
+         me->SetStatFlatModifier(UNIT_MOD_STAT_STRENGTH, BASE_VALUE, me->GetCreateStat(STAT_STRENGTH) - 9.f);
          atpower = (me->GetTotalAuraModValue(UNIT_MOD_STAT_STRENGTH) * 2.f + value) * ap_mod;
-         me->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, atpower);
+         me->SetStatFlatModifier(UNIT_MOD_ATTACK_POWER, BASE_VALUE, atpower);
          me->UpdateAttackPowerAndDamage();
      }
 
      //ARMOR
      value = float(basearmor);
      //get minion's armor and give 35% to pet (just as for real pets)
-     value += m_creatureOwner->GetModifierValue(UNIT_MOD_ARMOR, BASE_VALUE) * 0.35f;
-     me->SetModifierValue(UNIT_MOD_ARMOR, BASE_VALUE, value);
+     value += m_creatureOwner->GetFlatModifierValue(UNIT_MOD_ARMOR, BASE_VALUE) * 0.35f;
+     me->SetStatFlatModifier(UNIT_MOD_ARMOR, BASE_VALUE, value);
      me->UpdateArmor();
 
      //RESISTANCES
@@ -1802,7 +1802,7 @@ void bot_pet_ai::SetStats(bool force, bool /*unk*/)
      for (uint8 i = SPELL_SCHOOL_HOLY; i != MAX_SPELL_SCHOOL; ++i)
      {
          value = float(m_creatureOwner->GetResistance(SpellSchools(i)));
-         me->SetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + i), BASE_VALUE, 0.4f * value);
+         me->SetStatFlatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + i), BASE_VALUE, 0.4f * value);
          me->UpdateResistances(i);
      }
 
@@ -1842,14 +1842,14 @@ void bot_pet_ai::SetStats(bool force, bool /*unk*/)
      //PARRY
      if (CanParry())
      {
-         value = m_creatureOwner->GetUnitParryChance();
+         value = m_creatureOwner->GetUnitParryChance((BASE_ATTACK), me);
          parry = value;
      }
 
      //DODGE
      if (CanDodge())
      {
-         value = m_creatureOwner->GetUnitDodgeChance();
+         value = m_creatureOwner->GetUnitDodgeChance((BASE_ATTACK), me);
          value += IsTank() * 10;
          dodge = value;
      }
@@ -3340,7 +3340,7 @@ void bot_minion_ai::_OnHealthUpdate() const
      if (bonuspct)
          m_totalhp = (m_totalhp * (100 + bonuspct)) / 100;
      m_totalhp = float(uint32(m_totalhp) + (10 - (uint32(m_totalhp) % 10)));
-     me->SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, float(m_totalhp)); //replaces base hp at max lvl
+     me->SetStatFlatModifier(UNIT_MOD_HEALTH, BASE_VALUE, float(m_totalhp)); //replaces base hp at max lvl
      me->UpdateMaxHealth(); //will use our values we just set (update base health and buffs)
      //TC_LOG_ERROR("entities.player", "overall hp: %u", me->GetMaxHealth());
      me->SetHealth(uint32(0.5f + float(me->GetMaxHealth()) * pct / 100.f)); //restore pct
@@ -3371,7 +3371,7 @@ void bot_minion_ai::_OnManaUpdate(bool /*shapeshift*/)
      m_basemana += IAmFree() ? mylevel * 125.f : 0; //+10000/+0 mana at 80
      m_basemana += _getTotalBotStat(BOT_ITEM_MOD_MANA);
      m_basemana = float(uint32(m_basemana) - (uint32(m_basemana) % 5));
-     me->SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, m_basemana);
+     me->SetStatFlatModifier(UNIT_MOD_MANA, BASE_VALUE, m_basemana);
      me->UpdateMaxPower(POWER_MANA);
      me->SetPower(POWER_MANA, uint32(0.5f + float(me->GetMaxPower(POWER_MANA)) * pct / 100.f)); //restore pct
 }
@@ -3387,7 +3387,7 @@ void bot_minion_ai::_OnMeleeDamageUpdate(uint8 myclass) const
      {
          float weap_damage_base = _getBotStat(i, BOT_ITEM_MOD_DAMAGE);
          weap_damage_base += IAmFree() ? me->getLevel() * 3.75f : 0; //+300/+20 dam at 80
-         me->SetModifierValue(UnitMods(UNIT_MOD_DAMAGE_MAINHAND + i), BASE_VALUE, _getBotStat(i, BOT_ITEM_MOD_DAMAGE));
+         me->SetStatFlatModifier(UnitMods(UNIT_MOD_DAMAGE_MAINHAND + i), BASE_VALUE, _getBotStat(i, BOT_ITEM_MOD_DAMAGE));
      }
      float atpower = IAmFree() ? me->getLevel() * 75.f : std::max(me->getLevel() - 40.f, 0.f) * 10.f; //+6000/+400 base ap at 80
      atpower += _getTotalBotStat(BOT_ITEM_MOD_ATTACK_POWER) + _getTotalBotStat(BOT_ITEM_MOD_RANGED_ATTACK_POWER);
@@ -3414,11 +3414,11 @@ void bot_minion_ai::_OnMeleeDamageUpdate(uint8 myclass) const
          }
      }
      atpower *= ap_mod;
-     me->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, atpower);
+     me->SetStatFlatModifier(UNIT_MOD_ATTACK_POWER, BASE_VALUE, atpower);
      me->UpdateAttackPowerAndDamage();
      if (myclass == BOT_CLASS_HUNTER || myclass == BOT_CLASS_ROGUE)
      {
-         me->SetModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, BASE_VALUE, atpower);
+         me->SetStatFlatModifier(UNIT_MOD_ATTACK_POWER_RANGED, BASE_VALUE, atpower);
          me->UpdateAttackPowerAndDamage(true);
      }
 }
@@ -3443,7 +3443,7 @@ void bot_pet_ai::_OnHealthUpdate() const
      uint32 m_totalhp = m_basehp + hp_add;
      if (IsTank())
          m_totalhp = (m_totalhp * 135) / 100; //35% hp bonus for tanks
-     me->SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, float(m_totalhp));
+     me->SetStatFlatModifier(UNIT_MOD_HEALTH, BASE_VALUE, float(m_totalhp));
      me->UpdateMaxHealth(); //will use values set (update base health and buffs)
      me->SetHealth(uint32(0.5f + float(me->GetMaxHealth()) * pct / 100.f)); //restore pct
 }
@@ -3465,7 +3465,7 @@ void bot_pet_ai::_OnManaUpdate(bool /*shapeshift*/)
      m_basemana += me->GetTotalStatValue(STAT_INTELLECT) * mana_mult; //remove base stamina (not calculated into mana)
      m_basemana += (m_creatureOwner->GetMaxPower(POWER_MANA) - m_creatureOwner->GetCreateMana()) / 3;
      m_basemana += (GetPetType(me) * mylevel);
-     me->SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, m_basemana);
+     me->SetStatFlatModifier(UNIT_MOD_MANA, BASE_VALUE, m_basemana);
      me->UpdateMaxPower(POWER_MANA);
      me->SetPower(POWER_MANA, uint32(0.5f + float(me->GetMaxPower(POWER_MANA)) * pct / 100.f));//restore pct
 }
@@ -3505,7 +3505,7 @@ void bot_minion_ai::Evade(bool force)
      }
      if (CCed(me)) return;
      if (!force && Rand() > 10) return;
-     EnterEvadeMode(force);
+     EnterEvadeMode(EVADE_REASON_OTHER);
      if (!force && !master->IsInCombat() && !me->IsInCombat() && (!m_botsPet || !m_botsPet->IsInCombat())) return;
      if (!force && CheckAttackTarget(_botclass)) return;
      if (master->IsInCombat() && !IAmFree())
@@ -5037,7 +5037,7 @@ void bot_minion_ai::BreakCC(uint32 diff)
 //If mounted: 20%
 //If ranged: 125%
 //If master is dead: max range
-+float bot_ai::InitAttackRange(float origRange, bool ranged) const
+float bot_ai::InitAttackRange(float origRange, bool ranged) const
 {
      if (me->IsMounted())
          origRange *= 0.2f;
@@ -5931,18 +5931,18 @@ void bot_minion_ai::ApplyItemsSpells()
              if (slot >= BOT_SLOT_RANGED || einfo->ItemEntry[slot] != item->GetEntry())
                  ApplyItemEquipSpell(item, true);
 }
-+inline float bot_minion_ai::_getBotStat(uint8 slot, uint8 stat) const
+inline float bot_minion_ai::_getBotStat(uint8 slot, uint8 stat) const
 {
      return float(static_cast<BotStat>(_stats[slot])[stat]);
 }
-+inline float bot_minion_ai::_getTotalBotStat(uint8 stat) const
+inline float bot_minion_ai::_getTotalBotStat(uint8 stat) const
 {
      int32 value = 0;
      for (uint8 slot = 0; slot != BOT_INVENTORY_SIZE; ++slot)
          value += static_cast<BotStat>(_stats[slot])[stat];
      return float(value);
 }
-+inline float bot_minion_ai::_getRatingMultiplier(CombatRating cr) const
+inline float bot_minion_ai::_getRatingMultiplier(CombatRating cr) const
 {
      GtCombatRatingsEntry const* Rating =
          sGtCombatRatingsStore.LookupEntry(cr*GT_MAX_LEVEL + (me->getLevel()-1));
@@ -5953,7 +5953,7 @@ void bot_minion_ai::ApplyItemsSpells()
      //bots gain 20% increased bonus from rating mods
      return 1.2f * classRating->ratio / Rating->ratio;
 }
-+char const* bot_minion_ai::_getNameForSlot(uint8 slot) const
+char const* bot_minion_ai::_getNameForSlot(uint8 slot) const
 {
      switch (slot)
      {
@@ -6007,7 +6007,7 @@ bool bot_minion_ai::CanHeal() const
          (_botclass == BOT_CLASS_PRIEST || _botclass == BOT_CLASS_DRUID ||
          _botclass == BOT_CLASS_SHAMAN || _botclass == BOT_CLASS_PALADIN);
 }
-+char const* bot_ai::GetRoleString(uint8 role) const
+char const* bot_ai::GetRoleString(uint8 role) const
 {
      switch (role)
      {
@@ -7218,7 +7218,7 @@ bool bot_ai::IsBotImmuneToSpell(SpellInfo const* spellInfo) const
      }
      return false;
 }
-+MeleeHitOutcome bot_ai::BotRollCustomMeleeOutcomeAgainst(Unit const* victim, WeaponAttackType attType) const
+MeleeHitOutcome bot_ai::BotRollCustomMeleeOutcomeAgainst(Unit const* victim, WeaponAttackType attType) const
 {
      if (GetNextAttackMeleeOutCome() != MELEE_HIT_CRUSHING)
          return GetNextAttackMeleeOutCome();

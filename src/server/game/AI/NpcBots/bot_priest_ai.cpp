@@ -173,7 +173,7 @@ public:
         void Aggro(Unit*) { }
         void AttackStart(Unit*) { }
         void KilledUnit(Unit*) { }
-        void EnterEvadeMode() { bot_minion_ai::EnterEvadeMode(); }
+        void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER) { bot_minion_ai::EnterEvadeMode(why); }
         void MoveInLineOfSight(Unit* u) { bot_minion_ai::MoveInLineOfSight(u); }
         void JustDied(Unit* u) { bot_minion_ai::JustDied(u); }
 
@@ -490,7 +490,7 @@ public:
 
             if (Unit* target = FindHostileDispelTarget())
             {
-                uint32 dm = DM && !target->IsImmunedToSpell(sSpellMgr->GetSpellInfo(DM)) ? DM : MD;
+                uint32 dm = DM && !target->IsImmunedToSpell(sSpellMgr->GetSpellInfo(DM),NULL) ? DM : MD;
                 if (target && doCast(target, dm))
                 {
                     CheckDispelTimer = 1000;

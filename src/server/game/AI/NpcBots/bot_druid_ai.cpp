@@ -84,7 +84,7 @@ public:
         void Aggro(Unit*) { }
         void AttackStart(Unit*) { }
         void KilledUnit(Unit*) { }
-        void EnterEvadeMode() { bot_minion_ai::EnterEvadeMode(); }
+        void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER) { bot_minion_ai::EnterEvadeMode(); }
         void MoveInLineOfSight(Unit* u) { bot_minion_ai::MoveInLineOfSight(u); }
         void JustDied(Unit* u) { removeFeralForm(true, false); bot_minion_ai::JustDied(u); }
 
@@ -845,7 +845,7 @@ public:
                     Form = BOT_STANCE_NONE;
                     SetShouldUpdateStats();
                     me->setPowerType(POWER_MANA);
-                    me->RemoveMovementImpairingAuras();
+                    me->RemoveMovementImpairingAuras(true);
                     break;
                 default:
                     return;
