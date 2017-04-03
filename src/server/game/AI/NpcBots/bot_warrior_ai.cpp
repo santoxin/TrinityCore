@@ -250,7 +250,7 @@ public:
             {
                 temptimer = GC_Timer;
                 if (me->getLevel() >= 29)
-                    me->RemoveMovementImpairingAuras();
+                    me->RemoveMovementImpairingAuras(true);
                 if (doCast(opponent, GetSpell(CHARGE_1), me->IsInCombat()))
                 {
                     GC_Timer = temptimer;
