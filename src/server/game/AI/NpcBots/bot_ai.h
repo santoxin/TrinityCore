@@ -455,8 +455,9 @@ class bot_ai : public ScriptedAI
          virtual uint32 GetBotSpellPower() const { return spellpower; }
          virtual bool IsBotImmuneToSpell(SpellInfo const* spellInfo) const;
          MeleeHitOutcome BotRollCustomMeleeOutcomeAgainst(Unit const* victim, WeaponAttackType attType) const;
-         virtual void CastBotItemCombatSpell(Unit* /*target*/, WeaponAttackType /*attType*/, uint32 /*procVictim*/, uint32 /*procEx*/, Spell const* /*spell = NULL*/) {}
-         virtual void OnBotSpellInterrupted(SpellSchoolMask schoolMask, uint32 unTimeMs);
+		 virtual void CastBotItemCombatSpell(DamageInfo const& damageInfo, Item* item, ItemTemplate const* proto) {}
+		 virtual void CastBotItemCombatSpell(DamageInfo const& damageInfo) {}
+		 virtual void OnBotSpellInterrupted(SpellSchoolMask schoolMask, uint32 unTimeMs);
          virtual void OnBotSpellGo(Spell const* spell);
          virtual void OnClassSpellGo(SpellInfo const* /*spellInfo*/) {}
          static void InitBotCustomSpells();
@@ -677,8 +678,8 @@ class bot_minion_ai : public bot_ai
          virtual bool CanBlock() const { return !(me->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK) && me->CanUseAttackType(OFF_ATTACK); }
          virtual bool CanCrit() const { return crit_mod > 0.0f; }
          virtual bool CanMiss() const { return true; }
-         void CastBotItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Spell const* spell = NULL);
-         void CastBotItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item* item, ItemTemplate const* proto, Spell const* spell = NULL);
+		 virtual void CastBotItemCombatSpell(DamageInfo const& damageInfo, Item* item, ItemTemplate const* proto);
+         virtual void CastBotItemCombatSpell(DamageInfo const& damageInfo);
          float GetTotalBotStat(uint8 stat) const { return _getTotalBotStat(stat); }
          void InitRoles();
          void InitEquips();

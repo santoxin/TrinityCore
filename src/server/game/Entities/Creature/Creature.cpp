@@ -663,7 +663,6 @@ void Creature::Update(uint32 diff)
             // CORPSE/DEAD state will processed at next tick (in other case death timer will be updated unexpectedly)
              //npcbot - skip dead state for bots (handled by AI)
             if (!bot_AI)
-				break
             //end npcbot
 			if (!IsAlive())
                 break;
@@ -747,7 +746,7 @@ void Creature::Update(uint32 diff)
 
                 i_AI->UpdateAI(diff);
 				//bot
-                if (!bot_AI)zzzz
+                if (!bot_AI)
                 //end bot
                 m_AI_locked = false;
             }
@@ -3524,11 +3523,10 @@ MeleeHitOutcome Creature::BotRollMeleeOutcomeAgainst(Unit const* victim, WeaponA
 {
     return bot_AI ? bot_AI->BotRollCustomMeleeOutcomeAgainst(victim, attType) : RollMeleeOutcomeAgainst(victim, attType);
 }
-
-void Creature::CastCreatureItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Spell const* spell)
+void Creature::CastItemCombatSpell(DamageInfo const& damageInfo)
 {
-    if (bot_AI)
-        bot_AI->CastBotItemCombatSpell(target, attType, procVictim, procEx, spell);
+	if (bot_AI)
+		bot_AI->CastBotItemCombatSpell(damageInfo);
 }
 
 void Creature::OnSpellGo(Spell const* spell)

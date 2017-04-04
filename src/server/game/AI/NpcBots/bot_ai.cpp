@@ -10,6 +10,7 @@
 #include "MapManager.h"
 #include "ScriptedGossip.h"
 #include "SpellAuraEffects.h"
+#include "ScriptMgr.h"
 /*
 +NpcBot System by Graff (onlysuffering@gmail.com)
 +Original patch from: LordPsyan https://bitbucket.org/lordpsyan/trinitycore-patches/src/3b8b9072280e/Individual/11185-BOTS-NPCBots.patch
@@ -975,10 +976,14 @@ void bot_minion_ai::_getBotDispellableAuraList(Unit* target, Unit* caster, uint3
              //skip Vampiric Touch to prevent being CCed just heal it out
              if (aura->GetSpellInfo()->IsRankOf(sSpellMgr->GetSpellInfo(34914)))
                  continue;
+			 
+			 int32 chance = aura->CalcDispelChance(target, !me->IsFriendlyTo(caster));
+			 if (!chance)
+				 continue;
 
              uint8 charges = (aura->GetSpellInfo()->AttributesEx7 & SPELL_ATTR7_DISPEL_CHARGES) ? aura->GetCharges() : aura->GetStackAmount();
-             if (charges > 0)
-                 dispelList.push_back(std::make_pair(aura, charges));
+			 if (charges > 0)
+				 dispelList.emplace_back(aura, chance, charges);
          }
      }
 }
@@ -6791,12 +6796,16 @@ void bot_ai::OnBotSpellInterrupted(SpellSchoolMask schoolMask, uint32 unTimeMs)
          //    unTimeMs, itr->second.second, info->SpellName[0], info->Id, info->SchoolMask, schoolMask);
      }
 }
-void bot_minion_ai::CastBotItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Spell const* spell/* = NULL*/)
+
+void bot_minion_ai::CastBotItemCombatSpell(DamageInfo const& damageInfo)
 {
-     if (!target || !target->IsAlive() || target == me)
-         return;
-     if (!me->CanUseAttackType(attType))
-         return;
+	Unit* target = damageInfo.GetVictim();
+	WeaponAttackType attType = damageInfo.GetAttackType();
+	if (!target || !target->IsAlive() || target == me)
+		return;
+	if (!me->CanUseAttackType(attType))
+		return;
+
      Item* item;
      ItemTemplate const* proto;
      uint8 slot;
@@ -6808,11 +6817,12 @@ void bot_minion_ai::CastBotItemCombatSpell(Unit* target, WeaponAttackType attTyp
          if (!item)
              continue;
          //skip standard items
-         if (i < BOT_SLOT_RANGED && einfo->ItemEntry[i] == item->GetEntry())
+         if (item->IsBroken())
              continue;
          proto = item->GetTemplate();
          if (!proto)
              continue;
+
          // Additional check for weapons
          if (proto->Class == ITEM_CLASS_WEAPON)
          {
@@ -6822,50 +6832,62 @@ void bot_minion_ai::CastBotItemCombatSpell(Unit* target, WeaponAttackType attTyp
                  case BASE_ATTACK:   slot = BOT_SLOT_MAINHAND;   break;
                  case OFF_ATTACK:    slot = BOT_SLOT_OFFHAND;    break;
                  case RANGED_ATTACK: slot = BOT_SLOT_RANGED;     break;
-                 default:            slot = BOT_MAX_SLOTS;       break;
+                 default:            slot = EQUIPMENT_SLOT_END;       break;
              }
              if (slot - 1 != i)
                  continue;
+
          }
-         CastBotItemCombatSpell(target, attType, procVictim, procEx, item, proto, spell);
+         CastBotItemCombatSpell(damageInfo, item, proto);
      }
 }
-void bot_minion_ai::CastBotItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item* item, ItemTemplate const* proto, Spell const* /*spell*//* = NULL*/)
+
+void bot_minion_ai::CastBotItemCombatSpell(DamageInfo const& damageInfo, Item* item, ItemTemplate const* proto)
 {
+	Unit* target = damageInfo.GetVictim();
+	WeaponAttackType attType = damageInfo.GetAttackType();
+	bool canTrigger = (damageInfo.GetHitMask() & (PROC_HIT_NORMAL | PROC_HIT_CRITICAL | PROC_HIT_ABSORB)) != 0;
      //TODO: custom spell triggers maybe?
      // Can do effect if any damage done to target
-     if (procVictim & PROC_FLAG_TAKEN_DAMAGE)
+     if (canTrigger)
      {
          for (uint8 i = 0; i != MAX_ITEM_PROTO_SPELLS; ++i)
          {
-             _Spell const& spellData = proto->Spells[i];
-             // no spell
-             if (!spellData.SpellId)
-                 continue;
-             // wrong triggering type
-             if (spellData.SpellTrigger != ITEM_SPELLTRIGGER_CHANCE_ON_HIT)
-                 continue;
-             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellData.SpellId);
-             if (!spellInfo)
-             {
-                 //TC_LOG_ERROR("entities.player.items", "WORLD: unknown Item spellid %i", spellData.SpellId);
-                 continue;
-             }
-             // not allow proc extra attack spell at extra attack
-             if (me->m_extraAttacks && spellInfo->HasEffect(SPELL_EFFECT_ADD_EXTRA_ATTACKS))
-                 return;
-             float chance = float(spellInfo->ProcChance);
-             if (spellData.SpellPPMRate)
-             {
-                 uint32 WeaponSpeed = me->GetAttackTime(attType);
-                 chance = me->GetPPMProcChance(WeaponSpeed, spellData.SpellPPMRate, spellInfo);
-             }
-             else if (chance > 100.0f)
-                 chance = me->GetWeaponProcChance();
-             if (roll_chance_f(chance))
-                 me->CastSpell(target, spellInfo->Id, true, item);
+			 _Spell const& spellData = proto->Spells[i];
+
+			 // no spell
+			 if (spellData.SpellId <= 0)
+				 continue;
+
+			 // wrong triggering type
+			 if (spellData.SpellTrigger != ITEM_SPELLTRIGGER_CHANCE_ON_HIT)
+				 continue;
+
+			 SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellData.SpellId);
+			 if (!spellInfo)
+			 {
+				 continue;
+			 }
+
+			 // not allow proc extra attack spell at extra attack
+			 if (me->m_extraAttacks && spellInfo->HasEffect(SPELL_EFFECT_ADD_EXTRA_ATTACKS))
+				 return;
+
+			 float chance = (float)spellInfo->ProcChance;
+
+			 if (spellData.SpellPPMRate)
+			 {
+				 uint32 WeaponSpeed = me->GetAttackTime(damageInfo.GetAttackType());
+				 chance = me->GetPPMProcChance(WeaponSpeed, spellData.SpellPPMRate, spellInfo);
+			 }
+			 else if (chance > 100.0f)
+				 chance = me->GetWeaponProcChance();
+
+			 if (roll_chance_f(chance))
+				 me->CastSpell(damageInfo.GetVictim(), spellInfo->Id, true, item);
          }
      }
+
      // item combat enchantments
      for (uint8 e_slot = 0; e_slot != MAX_ENCHANTMENT_SLOT; ++e_slot)
      {
@@ -6877,19 +6899,25 @@ void bot_minion_ai::CastBotItemCombatSpell(Unit* target, WeaponAttackType attTyp
          {
              if (pEnchant->type[s] != ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
                  continue;
-             SpellEnchantProcEntry const* entry = sSpellMgr->GetSpellEnchantProcEvent(enchant_id);
-             if (entry && entry->procEx)
-             {
-                 // Check hit/crit/dodge/parry requirement
-                 if ((entry->procEx & procEx) == 0)
-                     continue;
-             }
+			 SpellEnchantProcEntry const* entry = sSpellMgr->GetSpellEnchantProcEvent(enchant_id);
+			 if (entry && entry->HitMask)
+			 {
+				 // Check hit/crit/dodge/parry requirement
+				 if ((entry->HitMask & damageInfo.GetHitMask()) == 0)
+					 continue;
+			 }
              else
              {
-                 // Can do effect if any damage done to target
-                 if (!(procVictim & PROC_FLAG_TAKEN_DAMAGE))
-                     continue;
+				 // Can do effect if any damage done to target
+				 // for done procs allow normal + critical + absorbs by default
+				 if (!canTrigger)
+					 continue;
              }
+			 
+			 // check if enchant procs only on white hits
+			 if (entry && (entry->AttributesMask & ENCHANT_PROC_ATTR_WHITE_HIT) && damageInfo.GetSpellInfo())
+				 continue;
+
              SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(pEnchant->spellid[s]);
              if (!spellInfo)
              {
@@ -6900,23 +6928,41 @@ void bot_minion_ai::CastBotItemCombatSpell(Unit* target, WeaponAttackType attTyp
              float chance = pEnchant->amount[s] != 0 ? float(pEnchant->amount[s]) : me->GetWeaponProcChance();
              if (entry)
              {
-                 if (entry->PPMChance)
-                     chance = me->GetPPMProcChance(proto->Delay, entry->PPMChance, spellInfo);
-                 else if (entry->customChance)
-                     chance = float(entry->customChance);
+                 if (entry->ProcsPerMinute)
+                     chance = me->GetPPMProcChance(proto->Delay, entry->ProcsPerMinute, spellInfo);
+                 else if (entry->Chance)
+                     chance = float(entry->Chance);
              }
-             //// Apply spell mods
-             //ApplySpellMod(pEnchant->spellid[s], SPELLMOD_CHANCE_OF_SUCCESS, chance);
-             // Shiv has 100% chance to apply the poison
-             if (me->FindCurrentSpellBySpellId(5938) && e_slot == TEMP_ENCHANTMENT_SLOT)
-                 chance = 100.0f;
-             if (roll_chance_f(chance))
-             {
-                 if (spellInfo->IsPositive())
-                     me->CastSpell(me, spellInfo, true, item);
-                 else
-                     me->CastSpell(target, spellInfo, true, item);
-             }
+
+			 // Apply spell mods
+			 //ApplySpellMod<SPELLMOD_CHANCE_OF_SUCCESS>(pEnchant->spellid[s], chance);
+
+			 // Shiv has 100% chance to apply the poison
+			 if (me->FindCurrentSpellBySpellId(5938) && e_slot == TEMP_ENCHANTMENT_SLOT)
+				 chance = 100.0f;
+
+			 if (roll_chance_f(chance))
+			 {
+				 Unit* target = spellInfo->IsPositive() ? this->me : damageInfo.GetVictim();
+
+				 // reduce effect values if enchant is limited
+				 CustomSpellValues values;
+				 if (entry && (entry->AttributesMask & ENCHANT_PROC_ATTR_LIMIT_60) && target->getLevel() > 60)
+				 {
+					 int32 const lvlDifference = target->getLevel() - 60;
+					 int32 const lvlPenaltyFactor = 4; // 4% lost effectiveness per level
+
+					 int32 const effectPct = std::max(0, 100 - (lvlDifference * lvlPenaltyFactor));
+
+					 for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+					 {
+						 if (spellInfo->Effects[i].IsEffect())
+							 values.AddSpellMod(static_cast<SpellValueMod>(SPELLVALUE_BASE_POINT0 + i), CalculatePct(spellInfo->Effects[i].CalcValue(me), effectPct));
+					 }
+				 }
+
+				 me->CastCustomSpell(spellInfo->Id, values, target, TRIGGERED_FULL_MASK, item);
+			 }
          }
      }
 }
@@ -7203,6 +7249,7 @@ bool bot_ai::IsBotImmuneToSpell(SpellInfo const* spellInfo) const
 {
      if (spellInfo->_IsPositiveSpell())
          return false;
+
      if (_botclass >= BOT_CLASS_EX_START)
      {
          //bots of W3 classes will not be easily CCed

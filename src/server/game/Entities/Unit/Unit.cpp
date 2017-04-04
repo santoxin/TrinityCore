@@ -1576,8 +1576,11 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
         ToPlayer()->CastItemCombatSpell(dmgInfo);
     }
     //npcbot - CastItemCombatSpell for bots
-    else if (ToCreature()->GetBotAI())
-        ToCreature()->CastCreatureItemCombatSpell(victim, damageInfo->attackType, damageInfo->procVictim, damageInfo->procEx);
+	else if (ToCreature()->GetBotAI())
+	{
+		DamageInfo dmgInfo(*damageInfo);
+		ToCreature()->CastItemCombatSpell(dmgInfo);
+	}
     //end npcbot
     // Do effect if any damage done to target
     if (damageInfo->damage)
@@ -2156,9 +2159,10 @@ void Unit::ExecuteDelayedSwingHit(bool extra)
 
     //TriggerAurasProcOnEvent(*_damageInfo);
     DealMeleeDamage(&_damageInfo, true);
-
+	
     // Recursion warning here
-    ProcDamageAndSpell(_damageInfo.target, _damageInfo.procAttacker, _damageInfo.procVictim, _damageInfo.procEx, _damageInfo.damage, _damageInfo.attackType);
+	DamageInfo dmgInfo(_damageInfo);
+	ProcSkillsAndAuras(_damageInfo.target, _damageInfo.procAttacker, _damageInfo.procVictim, PROC_SPELL_TYPE_NONE, PROC_SPELL_PHASE_NONE, dmgInfo.GetHitMask(), nullptr, &dmgInfo, nullptr);
 }
 //NpcBot mod
 void Unit::SuspendDelayedSwing()
@@ -11446,7 +11450,7 @@ void Unit::ProcSkillsAndReactives(bool isVictim, Unit* procTarget, uint32 typeMa
                 }
 				
                 //npcbot - update reactives for bots
-                if ((procExtra & (PROC_EX_DODGE | PROC_EX_PARRY)) && GetTypeId() == TYPEID_UNIT && ToCreature()->GetBotAI() && ToCreature()->GetBotClass() == CLASS_WARRIOR)
+                if ((hitMask & (PROC_HIT_DODGE | PROC_HIT_PARRY)) && GetTypeId() == TYPEID_UNIT && ToCreature()->GetBotAI() && ToCreature()->GetBotClass() == CLASS_WARRIOR)
                 {
                     StartReactiveTimer(REACTIVE_OVERPOWER);
                 }

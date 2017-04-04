@@ -528,12 +528,11 @@ class TC_GAME_API SpellInfo
         bool SpellCancelsAuraEffect(SpellInfo const* auraSpellInfo, uint8 auraEffIndex) const;
 
         uint32 GetAllowedMechanicMask() const;
-
+		bool _IsPositiveSpell() const;
     private:
         // loading helpers
         void _InitializeExplicitTargetMask();
         bool _IsPositiveEffect(uint8 effIndex, bool deep) const;
-        bool _IsPositiveSpell() const;
         static bool _IsPositiveTarget(uint32 targetA, uint32 targetB);
         void _LoadSpellSpecific();
         void _LoadAuraState();
