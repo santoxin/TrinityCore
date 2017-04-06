@@ -1576,7 +1576,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
         ToPlayer()->CastItemCombatSpell(dmgInfo);
     }
     //npcbot - CastItemCombatSpell for bots
-	else if (ToCreature()->GetBotAI())
+	else if (ToCreature()&&ToCreature()->GetBotAI())
 	{
 		DamageInfo dmgInfo(*damageInfo);
 		ToCreature()->CastItemCombatSpell(dmgInfo);
@@ -2954,11 +2954,11 @@ float Unit::GetUnitDodgeChance(WeaponAttackType attType, Unit const* victim) con
         {
             chance = 5.0f;
             //npcbot - custom dodge chance instead of bunch of auras and remove base chance
-            if (ToCreature()->GetBotAI())
+            if (victim->ToCreature()&&victim->ToCreature()->GetBotAI())
             {
-                if (!ToCreature()->CanDodge())
+                if (!victim->ToCreature()->CanDodge())
                     return 0.0f;
-                chance = ToCreature()->GetCreatureDodgeChance();
+                chance = victim->ToCreature()->GetCreatureDodgeChance();
             }
             //end npcbot
             chance += victim->GetTotalAuraModifier(SPELL_AURA_MOD_DODGE_PERCENT);
@@ -3012,11 +3012,11 @@ float Unit::GetUnitParryChance(WeaponAttackType attType, Unit const* victim) con
         if (!victim->IsTotem() && !(victim->ToCreature()->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY))
         {
             chance = 5.0f;
-			if(ToCreature()->GetBotAI())
+			if(victim->ToCreature()&&victim->ToCreature()->GetBotAI())
 			{
-				if (!ToCreature()->CanParry())
+				if (!victim->ToCreature()->CanParry())
 					return 0.0f;
-				chance = ToCreature()->GetCreatureParryChance();
+				chance = victim->ToCreature()->GetCreatureParryChance();
 			}
             chance += victim->GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT);
 
@@ -3077,11 +3077,11 @@ float Unit::GetUnitBlockChance(WeaponAttackType attType, Unit const* victim) con
         if (!victim->IsTotem() && !(victim->ToCreature()->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK))
         {
             chance = 5.0f;
-			if(ToCreature()->GetBotAI())
+			if(victim->ToCreature()&&victim->ToCreature()->GetBotAI())
 			{
-				if (!ToCreature()->CanBlock())
+				if (!victim->ToCreature()->CanBlock())
 					return 0.0f;
-				chance = ToCreature()->GetCreatureBlockChance();
+				chance = victim->ToCreature()->GetCreatureBlockChance();
 			}
             chance += victim->GetTotalAuraModifier(SPELL_AURA_MOD_BLOCK_PERCENT);
 
