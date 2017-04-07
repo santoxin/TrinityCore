@@ -2,6 +2,9 @@
 #include "ScriptPCH.h"
 #include "Language.h"
 #include "ScriptedGossip.h"
+#include "bot_ai.h"
+
+#define HERO_GOSSIP_MESSAGE DEFAULT_GOSSIP_MESSAGE
 
 #define GOSSIP_SENDER_WOWBOOK_DALARAN GOSSIP_ACTION_INFO_DEF + 1
 #define GOSSIP_SENDER_WOWBOOK_HEROS GOSSIP_ACTION_INFO_DEF + 2
@@ -25,9 +28,9 @@ class wowbook : public ItemScript
 			{
 				ClearGossipMenuFor(player);
 				AddGossipItemFor(player, GOSSIP_ICON_TRAINER, player->GetSession()->GetTrinityString(LANG_CITY_DALARAN), GOSSIP_SENDER_MAIN, GOSSIP_SENDER_WOWBOOK_DALARAN);
-				AddGossipItemFor(player, GOSSIP_ICON_TRAINER, player->GetSession()->GetTrinityString(LANG_WOWBOOK_HEROS), GOSSIP_SENDER_MAIN, GOSSIP_SENDER_WOWBOOK_HEROS);
-				AddGossipItemFor(player, GOSSIP_ICON_CHAT, player->GetSession()->GetTrinityString(LANG_WOWBOOK_SHOP), GOSSIP_SENDER_MAIN, GOSSIP_SENDER_WOWBOOK_SHOP);
-				AddGossipItemFor(player, GOSSIP_ICON_CHAT, player->GetSession()->GetTrinityString(LANG_WOWBOOK_RIDER), GOSSIP_SENDER_MAIN, GOSSIP_SENDER_WOWBOOK_RIDER);
+				AddGossipItemFor(player, GOSSIP_ICON_CHAT, player->GetSession()->GetTrinityString(LANG_WOWBOOK_HEROS), GOSSIP_SENDER_MAIN, GOSSIP_SENDER_WOWBOOK_HEROS);
+				//AddGossipItemFor(player, GOSSIP_ICON_CHAT, player->GetSession()->GetTrinityString(LANG_WOWBOOK_SHOP), GOSSIP_SENDER_MAIN, GOSSIP_SENDER_WOWBOOK_SHOP);
+				//AddGossipItemFor(player, GOSSIP_ICON_CHAT, player->GetSession()->GetTrinityString(LANG_WOWBOOK_RIDER), GOSSIP_SENDER_MAIN, GOSSIP_SENDER_WOWBOOK_RIDER);
 				AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, player->GetSession()->GetTrinityString(LANG_WOWBOOK_QUERY_MEMBERSHIP), GOSSIP_SENDER_MAIN, GOSSIP_SENDER_WOWBOOK_MEMBERSHIP);
 			}
 			SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, _item->GetGUID());
@@ -53,7 +56,7 @@ class wowbook : public ItemScript
 					player->TeleportTo(571, 5804.149902f, 624.770996f, 647.767029f, 1.640000f);
 					break;
 				case GOSSIP_SENDER_WOWBOOK_HEROS: //LANG_WOWBOOK_HEROS
-					OnHandleHeros(player);
+					OnListHeroClasses(player, _item);
 					break;
 				case GOSSIP_SENDER_WOWBOOK_SHOP: //LANG_WOWBOOK_SHOP
 					OnHandleMembershipShop(player);
@@ -68,17 +71,59 @@ class wowbook : public ItemScript
 					break;
 				}
 			}
+			else if (sender == GOSSIP_SENDER_WOWBOOK_HEROS) 
+			{
+				OnListHerosForClass(player, _item, uiAction);
+			}
 			return true;
 		}
-
-		void OnHandleHeros(Player* player)
+		void OnListHerosForClass(Player* player, Item *_item, uint32 uiAction)
 		{
-			AddGossipItemFor(player, GOSSIP_ICON_DOT, player->GetSession()->GetTrinityString(LANG_CITY_DALARAN), GOSSIP_SENDER_MAIN, GOSSIP_SENDER_WOWBOOK_DALARAN);
-			AddGossipItemFor(player, GOSSIP_ICON_DOT, player->GetSession()->GetTrinityString(LANG_WOWBOOK_HEROS), GOSSIP_SENDER_MAIN, GOSSIP_SENDER_WOWBOOK_HEROS);
-			AddGossipItemFor(player, GOSSIP_ICON_DOT, player->GetSession()->GetTrinityString(LANG_WOWBOOK_SHOP), GOSSIP_SENDER_MAIN, GOSSIP_SENDER_WOWBOOK_SHOP);
-			AddGossipItemFor(player, GOSSIP_ICON_DOT, player->GetSession()->GetTrinityString(LANG_WOWBOOK_RIDER), GOSSIP_SENDER_MAIN, GOSSIP_SENDER_WOWBOOK_RIDER);
-			AddGossipItemFor(player, GOSSIP_ICON_DOT, player->GetSession()->GetTrinityString(LANG_WOWBOOK_QUERY_MEMBERSHIP), GOSSIP_SENDER_MAIN, GOSSIP_SENDER_WOWBOOK_MEMBERSHIP);
-			SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, _item->GetGUID());
+			if (uiAction > BOT_CLASS_NORMAL_END)//show hero details, uiAction is hero id
+			{
+
+			}
+			else
+			{
+				uint8 botclass = uiAction;
+				uint8 localeIndex = ChatHandler(player->GetSession()).GetSessionDbLocaleIndex();
+				CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplates();
+				for (CreatureTemplateContainer::const_iterator itr = ctc->begin(); itr != ctc->end(); ++itr)
+				{
+					uint32 id = itr->second.Entry;
+					std::string name;
+
+					if (id < BOT_ENTRY_BEGIN || id > BOT_ENTRY_END) continue;
+					uint32 trainer_class = itr->second.trainer_class;
+					if (trainer_class != botclass) continue;
+					
+					if (CreatureLocale const* creatureLocale = sObjectMgr->GetCreatureLocale(id))
+					{
+						if (creatureLocale->Name.size() > localeIndex && !creatureLocale->Name[localeIndex].empty())
+						{
+							name = creatureLocale->Name[localeIndex];
+						}
+					}
+					else
+						name = itr->second.Name;
+
+					if (name.empty())
+						continue;
+					AddGossipItemFor(player, GOSSIP_ICON_DOT, name, GOSSIP_SENDER_WOWBOOK_HEROS, id);
+				}
+			}
+
+
+			SendGossipMenuFor(player, HERO_GOSSIP_MESSAGE, _item->GetGUID());
+		}
+		void OnListHeroClasses(Player* player, Item *_item)
+		{
+			for (int i = BOT_CLASS_NORMAL_START; i <= BOT_CLASS_NORMAL_END; i++)
+			{
+				AddGossipItemFor(player, GOSSIP_ICON_DOT, player->GetSession()->GetTrinityString(LANG_HEROS_CLASS_BASE+i), GOSSIP_SENDER_WOWBOOK_HEROS, i);
+			}
+			
+			SendGossipMenuFor(player, HERO_GOSSIP_MESSAGE, _item->GetGUID());
 		}
 		
 		void OnHandleMembership(Player* player)

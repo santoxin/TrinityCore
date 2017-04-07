@@ -1020,13 +1020,13 @@ REPLACE  into world.trinity_string (entry,content_default,content_loc4)
 values (15077,"You were killed by others and lost the item [%s]x%d","你被杀死后，丢失了[%s]x%d");
 
 REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
-values (15078,"Dalaran","传到达拉然");
+values (15078,"Go to Dalaran","传到达拉然");
 
 REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
 values (15079,"Query Membership Score","货币积分查询");
 
 REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
-values (15080,"Summon Trainer","召唤训练师");
+values (15080,"Summon Heros","英雄召唤");
 
 REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
 values (15081,"Membership Shop","杂货商人（未开放）");
@@ -1035,13 +1035,33 @@ REPLACE  into world.trinity_string (entry,content_default,content_loc4)
 values (15082,"Rider Shop","坐骑商人（未开放）");
 
 REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
-values (15083,"Query Membership Level","会员服务（未开放）");
+values (15083,"Membership","会员服务（未开放）");
 
 REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
 values (15084,"Summon trainer successfully","您临时召唤了一个训练师，有效时间5分钟");
 
 REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
-values (15085,"Summon trainer failed!","召唤训练师失败");
+values (15085,"WARRIOR","战士");
+REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
+values (15086,"PALADIN","圣骑士");
+REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
+values (15087,"HUNTER","猎人");
+REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
+values (15088,"ROGUE","盗贼");
+REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
+values (15089,"PRIEST","牧师");
+REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
+values (15090,"DEATH KNIGHT","死骑");
+REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
+values (15091,"SHAMAN","萨满");
+REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
+values (15092,"MAGE","法师");
+REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
+values (15093,"WARLOCK","术士");
+REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
+values (15094,"DRUID","德鲁伊");
+REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
+values (15095,"BLADE MASTER","剑圣");
 
 SET @STRING_ENTRY := 11100;
 REPLACE INTO `trinity_string` (`entry`, `content_default`,`content_loc4`,`content_loc5`) VALUES
