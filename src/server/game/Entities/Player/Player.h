@@ -2340,6 +2340,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 		void SetBotMgr(BotMgr* mgr) { ASSERT(!_botMgr); _botMgr = mgr; }
 		BotMgr* GetBotMgr() const { return _botMgr; }
 		bool HaveBot() const;
+		bool HaveBot(ObjectGuid guid) const;
+		bool SummonBot(uint32 heroid) const;
 		uint8 GetNpcBotsCount(bool inWorldOnly = false) const;
 		uint8 GetBotFollowDist() const;
 		void SetBotFollowDist(int8 dist);

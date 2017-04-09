@@ -77,6 +77,7 @@ class BotMgr
         void RemoveAllBots(uint8 removetype = BOT_REMOVE_LOGOUT);
         void RemoveBot(ObjectGuid guid, uint8 removetype = BOT_REMOVE_LOGOUT);
         BotAddResult AddBot(Creature* bot, bool takeMoney = false);
+		bool SummonBot(uint32 heroId);
         bool AddBotToGroup(Creature* bot);
         bool RemoveBotFromGroup(Creature* bot);
         bool RemoveAllBotsFromGroup(bool newGroup);

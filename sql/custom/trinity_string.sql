@@ -1023,10 +1023,10 @@ REPLACE  into world.trinity_string (entry,content_default,content_loc4)
 values (15078,"Go to Dalaran","传到达拉然");
 
 REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
-values (15079,"Query Membership Score","货币积分查询");
+values (15079,"Summon","召唤");
 
 REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
-values (15080,"Summon Heros","英雄召唤");
+values (15080,"Summon Heros","召唤英雄");
 
 REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
 values (15081,"Membership Shop","杂货商人（未开放）");
@@ -1059,9 +1059,9 @@ values (15092,"MAGE","法师");
 REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
 values (15093,"WARLOCK","术士");
 REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
-values (15094,"DRUID","德鲁伊");
+values (15095,"DRUID","德鲁伊");
 REPLACE  into world.trinity_string (entry,content_default,content_loc4) 
-values (15095,"BLADE MASTER","剑圣");
+values (15096,"BLADE MASTER","剑圣");
 
 SET @STRING_ENTRY := 11100;
 REPLACE INTO `trinity_string` (`entry`, `content_default`,`content_loc4`,`content_loc5`) VALUES

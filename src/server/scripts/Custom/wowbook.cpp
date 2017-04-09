@@ -11,9 +11,13 @@
 #define GOSSIP_SENDER_WOWBOOK_SHOP GOSSIP_ACTION_INFO_DEF + 3
 #define GOSSIP_SENDER_WOWBOOK_RIDER GOSSIP_ACTION_INFO_DEF + 4
 #define GOSSIP_SENDER_WOWBOOK_MEMBERSHIP GOSSIP_ACTION_INFO_DEF + 5
+#define GOSSIP_SENDER_WOWBOOK_HERO_DETAILS GOSSIP_ACTION_INFO_DEF + 6
 
 class wowbook : public ItemScript
 {
+	private:
+		uint32 currentBotClass;
+		uint32 currentBot;
     public:
         wowbook() : ItemScript("wowbook") { }
  		bool OnUse(Player *player, Item *_item, SpellCastTargets const& /*targets*/)
@@ -73,26 +77,54 @@ class wowbook : public ItemScript
 			}
 			else if (sender == GOSSIP_SENDER_WOWBOOK_HEROS) 
 			{
+				ClearGossipMenuFor(player);
 				OnListHerosForClass(player, _item, uiAction);
+			}
+			else if (sender == GOSSIP_SENDER_WOWBOOK_HERO_DETAILS)
+			{
+				if (uiAction == 0)//back
+				{
+					OnListHerosForClass(player, _item, currentBotClass);
+				}
+				else
+				{
+					CloseGossipMenuFor(player);
+					player->SummonBot(currentBot);
+				}
 			}
 			return true;
 		}
+		void OnShowHeroDetails(Player* player, Item *_item, uint32 heroId)
+		{
+			ObjectGuid guildHero = ObjectGuid(HighGuid::Unit, heroId);
+			if (player->HaveBot(guildHero))
+			{
+				AddGossipItemFor(player, GOSSIP_ICON_DOT, player->GetSession()->GetTrinityString(LANG_WOWBOOK_SUMMON), GOSSIP_SENDER_WOWBOOK_HERO_DETAILS, heroId);
+			}
+			currentBot = heroId;
+			AddGossipItemFor(player, GOSSIP_ICON_DOT, player->GetSession()->GetTrinityString(LANG_SLOT_NAME_BACK), GOSSIP_SENDER_WOWBOOK_HERO_DETAILS, 0);
+			SendGossipMenuFor(player, HERO_GOSSIP_MESSAGE, _item->GetGUID());
+		}
 		void OnListHerosForClass(Player* player, Item *_item, uint32 uiAction)
 		{
+			CloseGossipMenuFor(player);
+			ClearGossipMenuFor(player);
 			if (uiAction > BOT_CLASS_NORMAL_END)//show hero details, uiAction is hero id
 			{
-
+				OnShowHeroDetails(player, _item, uiAction);
 			}
 			else
 			{
 				uint8 botclass = uiAction;
+				currentBotClass = botclass;
 				uint8 localeIndex = ChatHandler(player->GetSession()).GetSessionDbLocaleIndex();
 				CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplates();
-				for (CreatureTemplateContainer::const_iterator itr = ctc->begin(); itr != ctc->end(); ++itr)
+				int idx = 0;
+				for (CreatureTemplateContainer::const_iterator itr = ctc->begin(); itr != ctc->end()&&idx<10; ++itr)
 				{
 					uint32 id = itr->second.Entry;
 					std::string name;
-
+					
 					if (id < BOT_ENTRY_BEGIN || id > BOT_ENTRY_END) continue;
 					uint32 trainer_class = itr->second.trainer_class;
 					if (trainer_class != botclass) continue;
@@ -109,6 +141,7 @@ class wowbook : public ItemScript
 
 					if (name.empty())
 						continue;
+					++idx;
 					AddGossipItemFor(player, GOSSIP_ICON_DOT, name, GOSSIP_SENDER_WOWBOOK_HEROS, id);
 				}
 			}
@@ -118,8 +151,10 @@ class wowbook : public ItemScript
 		}
 		void OnListHeroClasses(Player* player, Item *_item)
 		{
+			CloseGossipMenuFor(player);
 			for (int i = BOT_CLASS_NORMAL_START; i <= BOT_CLASS_NORMAL_END; i++)
 			{
+				if (i == 10)continue;
 				AddGossipItemFor(player, GOSSIP_ICON_DOT, player->GetSession()->GetTrinityString(LANG_HEROS_CLASS_BASE+i), GOSSIP_SENDER_WOWBOOK_HEROS, i);
 			}
 			

@@ -2272,12 +2272,24 @@ bool Player::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Un
 
     return Unit::IsImmunedToSpellEffect(spellInfo, index, caster);
 }
+
 //BOT
+bool Player::SummonBot(uint32 heroid) const
+{
+    return _botMgr && _botMgr->SummonBot(heroid);
+}
 bool Player::HaveBot() const
 {
-    return _botMgr && _botMgr->HaveBot();
+	return _botMgr && _botMgr->HaveBot();
 }
+bool Player::HaveBot(ObjectGuid guid) const
+{
+	if (!_botMgr)
+		return false;
 
+	Creature* bot = _botMgr->GetBot(guid);
+	return bot != NULL;
+}
 uint8 Player::GetNpcBotsCount(bool inWorldOnly) const
 {
     return HaveBot() ? _botMgr->GetNpcBotsCount(inWorldOnly) : 0;

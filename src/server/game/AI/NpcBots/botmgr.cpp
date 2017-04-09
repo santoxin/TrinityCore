@@ -507,6 +507,11 @@ void BotMgr::RemoveBot(ObjectGuid guid, uint8 removetype)
     bot->AI()->Reset();
 }
 
+bool BotMgr::SummonBot(uint32 heroId)
+{
+	return false;
+}
+
 BotAddResult BotMgr::AddBot(Creature* bot, bool takeMoney)
 {
     ASSERT(bot->IsNPCBot());
