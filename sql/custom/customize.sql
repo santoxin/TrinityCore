@@ -6,17 +6,6 @@ update `battleground_template` set MinLvl=99,MaxLvl=0 where ID not in (4,5,6);
 update `access_requirement` set level_min=99;
 */
 
-/* 会员充值支持 */
-CREATE TABLE IF NOT EXISTS `auth`.`account_membership` (
-  `id` INT NOT NULL,
-  `username` VARCHAR(45) NOT NULL,
-  `wowmoney` INT NULL DEFAULT 0,
-  `wowlevel` INT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `id_UNIQUE` (`id` ASC))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
-
 /*----------一些装备的修改------------------*/
 
 /*学习初级骑术的卷轴*/
@@ -1968,3 +1957,28 @@ CREATE TABLE IF NOT EXISTS `custom_transmogrification_sets` (
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+
+/* 会员充值支持 */
+CREATE TABLE IF NOT EXISTS `auth`.`account_premium` (
+  `id` int(11) NOT NULL DEFAULT '0' COMMENT 'Account id',
+  `setdate` int(4) NOT NULL DEFAULT '0',
+  `unsetdate` int(4) NOT NULL DEFAULT '0',
+  `premium_type` tinyint(4) unsigned NOT NULL DEFAULT '1',
+  `wow_point` tinyint(11) unsigned NOT NULL DEFAULT '0',
+  `active` tinyint(4) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `active` (`active`),
+  KEY `setdate` (`setdate`),
+  KEY `unsetdate` (`unsetdate`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+INSERT INTO `auth`.`rbac_permissions` (`id`, `name`) VALUES
+(999, 'Command: vip');
+
+INSERT INTO `auth`.`rbac_linked_permissions` (`id`, `linkedId`) VALUES
+(195, 999);
+
+INSERT INTO `world`.`command` (`name`, `permission`, `help`) VALUES
+('vip bank', 999, 'Syntax: .vip bank'),
+('vip mail', 999, 'Syntax: .vip mail');

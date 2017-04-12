@@ -16,11 +16,13 @@
  */
 
 // This is where scripts' loading functions should be declared:
-
-void AddSC_Transmogrification();
-
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
+
+void AddSC_Transmogrification();
+// VIP
+void AddSC_premium_commandscript();
+//WowBook
 void AddSC_wowbook();
 //Bots
 void AddSC_death_knight_bot();
@@ -42,7 +44,8 @@ void AddCustomScripts()
 {
 	AddSC_wowbook();
 	AddSC_Transmogrification();
-
+	// VIP
+    AddSC_premium_commandscript();
     //Bots
     AddSC_death_knight_bot();
     AddSC_druid_bot();
