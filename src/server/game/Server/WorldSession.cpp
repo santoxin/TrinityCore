@@ -143,7 +143,47 @@ WorldSession::WorldSession(uint32 id, std::string&& name, std::shared_ptr<WorldS
     }
 
 }
+WorldSession::WorldSession(uint32 id, std::string&& name, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter) :
+	m_muteTime(mute_time),
+	m_timeOutTime(0),
+	AntiDOS(this),
+	m_GUIDLow(0),
+	_player(NULL),
+	m_Socket(sock),
+	_security(sec),
+	_ispremium(false),
+	_accountId(id),
+	_accountName(std::move(name)),
+	m_expansion(expansion),
+	_warden(NULL),
+	_logoutTime(0),
+	m_inQueue(false),
+	m_playerLoading(false),
+	m_playerLogout(false),
+	m_playerRecentlyLogout(false),
+	m_playerSave(false),
+	m_sessionDbcLocale(sWorld->GetAvailableDbcLocale(locale)),
+	m_sessionDbLocaleIndex(locale),
+	m_latency(0),
+	m_clientTimeDelay(0),
+	m_TutorialsChanged(TUTORIALS_FLAG_NONE),
+	recruiterId(recruiter),
+	isRecruiter(isARecruiter),
+	_RBACData(NULL),
+	expireTime(60000), // 1 min after socket loss, session is deleted
+	forceExit(false),
+	m_currentBankerGUID()
+{
+	memset(m_Tutorials, 0, sizeof(m_Tutorials));
 
+	if (sock)
+	{
+		m_Address = sock->GetRemoteIpAddress().to_string();
+		ResetTimeOutTime();
+		LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = %u;", GetAccountId());     // One-time query
+	}
+
+}
 /// WorldSession destructor
 WorldSession::~WorldSession()
 {
