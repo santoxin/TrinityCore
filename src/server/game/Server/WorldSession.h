@@ -273,7 +273,7 @@ class TC_GAME_API WorldSession
 {
     public:
 		WorldSession(uint32 id, std::string&& name, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter);
-        WorldSession(uint32 id, std::string&& name, std::shared_ptr<WorldSocket> sock, AccountTypes sec, bool ispremium, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter);
+        WorldSession(uint32 id, std::string&& name, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint32 vip_level,uint32 wow_point, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter);
 		~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -310,7 +310,7 @@ class TC_GAME_API WorldSession
         void InvalidateRBACData(); // Used to force LoadPermissions at next HasPermission check
 
         AccountTypes GetSecurity() const { return _security; }
-		bool IsPremium() const { return _ispremium; }
+		bool IsPremium() const { return _vip_level>0; }
         uint32 GetAccountId() const { return _accountId; }
         Player* GetPlayer() const { return _player; }
         std::string const& GetPlayerName() const;
@@ -1066,8 +1066,9 @@ class TC_GAME_API WorldSession
         uint32 _accountId;
         std::string _accountName;
         uint8 m_expansion;
-		bool _ispremium;
-		
+		uint32 _vip_level;
+		uint32 _wow_point;
+
         typedef std::list<AddonInfo> AddonsList;
 
         // Warden

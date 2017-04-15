@@ -20,8 +20,6 @@
 // void Add${NameOfDirectory}Scripts()
 
 void AddSC_Transmogrification();
-// VIP
-void AddSC_premium_commandscript();
 //WowBook
 void AddSC_wowbook();
 //Bots
@@ -44,8 +42,6 @@ void AddCustomScripts()
 {
 	AddSC_wowbook();
 	AddSC_Transmogrification();
-	// VIP
-    AddSC_premium_commandscript();
     //Bots
     AddSC_death_knight_bot();
     AddSC_druid_bot();
