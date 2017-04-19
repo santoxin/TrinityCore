@@ -1961,8 +1961,9 @@ CREATE TABLE IF NOT EXISTS `custom_transmogrification_sets` (
 /* 会员充值支持 */
 CREATE TABLE IF NOT EXISTS `auth`.`account_premium` (
   `id` int(11) NOT NULL DEFAULT '0' COMMENT 'Account id',
-  `vip_level` tinyint(11) unsigned NOT NULL DEFAULT '0',
-  `wow_point` tinyint(11) unsigned NOT NULL DEFAULT '0',
+  `vip_level` int(11) unsigned NOT NULL DEFAULT '0',
+  `vip_expire` int(11) unsigned NOT NULL DEFAULT '0',
+  `wow_point` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

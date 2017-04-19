@@ -566,6 +566,7 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
     // Check premium
 	uint32 vip_level = 0;
 	uint32 wow_point = 0;
+	time_t vip_expire = 0;
     stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_PREMIUM);
     stmt->setUInt32(0, account.Id);
     PreparedQueryResult premresult = LoginDatabase.Query(stmt);
@@ -575,6 +576,7 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
 		Field* fields = premresult->Fetch();
 		vip_level = fields[0].GetUInt32();
 		wow_point = fields[1].GetUInt32();
+		vip_expire = fields[2].GetUInt32();
     }
 	else//还没记录，插入一条
 	{
@@ -610,7 +612,7 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
 
     _authed = true;
     _worldSession = new WorldSession(account.Id, std::move(authSession->Account), shared_from_this(), account.Security,
-        vip_level,wow_point, account.Expansion, mutetime, account.Locale, account.Recruiter, account.IsRectuiter);
+        vip_level,vip_expire, wow_point, account.Expansion, mutetime, account.Locale, account.Recruiter, account.IsRectuiter);
     _worldSession->ReadAddonsInfo(authSession->AddonInfo);
 
     // Initialize Warden system only if it is enabled by config

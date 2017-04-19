@@ -102,7 +102,7 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
 }
 
 /// WorldSession constructor
-WorldSession::WorldSession(uint32 id, std::string&& name, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint32 vip_level,uint32 wow_point, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter):
+WorldSession::WorldSession(uint32 id, std::string&& name, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint32 vip_level,time_t vip_expire,uint32 wow_point, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter):
     m_muteTime(mute_time),
     m_timeOutTime(0),
     AntiDOS(this),
@@ -111,6 +111,7 @@ WorldSession::WorldSession(uint32 id, std::string&& name, std::shared_ptr<WorldS
     m_Socket(sock),
     _security(sec),
 	_vip_level(vip_level),
+	_vip_expire(vip_expire),
 	_wow_point(wow_point),
     _accountId(id),
     _accountName(std::move(name)),
@@ -153,6 +154,7 @@ WorldSession::WorldSession(uint32 id, std::string&& name, std::shared_ptr<WorldS
 	m_Socket(sock),
 	_security(sec),
 	_vip_level(0),
+	_vip_expire(0),
 	_wow_point(0),
 	_accountId(id),
 	_accountName(std::move(name)),
